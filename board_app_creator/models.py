@@ -7,9 +7,8 @@ from re import sub as re_sub
 from django.conf import settings
 from django.db import models
 
-import board_app_creator.fields as fields
-
 import vcs
+import usb
 
 class RepositoryManager(models.Manager):
     """
@@ -34,6 +33,20 @@ class RepositoryManager(models.Manager):
         path = path_join(settings.RIOT_REPO_BASE_PATH, directory)
         vcs_repo = vcs.get_repository(path, url=url, vcs=vcs_type)
         return self.get_or_create(url=vcs_repo.url, path=vcs_repo.directory)
+
+class USBDeviceManager(models.Manager):
+    """
+    Model manager for USBDevice
+    """
+    def update_from_system(self):
+        """
+        Get all currently connected USB devices and update data base
+        accordingly
+        """
+        Port.objects.update(usb_device=None)
+        for dev in usb.get_device_list():
+            device, _ = self.get_or_create(usb_id=dev.usb_id, tag=dev.tag)
+            device.ports.get_or_create(path=dev.device)
 
 class Repository(models.Model):
     """
@@ -67,6 +80,29 @@ class Repository(models.Model):
             self._vcs = vcs.get_repository(self.path, self.vcs, self.url)
         return self._vcs
 
+class USBDevice(models.Model):
+    """
+    Representation of USB devices.
+    """
+    tag = models.CharField(max_length=60, blank=True, null=True)
+    usb_id = models.CharField(max_length=9, blank=False, null=False,
+                              unique=True)
+
+    objects = USBDeviceManager()
+
+    def __str__(self):
+        return self.usb_id
+
+class Port(models.Model):
+    """
+    Ports a board is connected on to this system.
+    """
+    path = models.CharField(max_length=20, unique=True, blank=False, null=False)
+    usb_device = models.ForeignKey('USBDevice', related_name='ports')
+
+    def __str__(self):
+        return self.path
+
 class Board(models.Model):
     """
     A board in one of the RIOT repositories.
@@ -79,8 +115,9 @@ class Board(models.Model):
     cpu_repo = models.ForeignKey('Repository', related_name='cpus',
                                  limit_choices_to={'has_cpu_tree': True},
                                  verbose_name='cpu_repository')
-    usb_vid = fields.SmallHexField()
-    usb_pid = fields.SmallHexField()
+    usb_device= models.OneToOneField('USBDevice', related_name='board')
 
     def __str__(self):
         return self.riot_name
+
+
