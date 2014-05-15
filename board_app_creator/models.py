@@ -1,7 +1,7 @@
 """
 Models for board_app_creator application.
 """
-from os.path import join as path_join
+from os.path import join as path_join, relpath
 from re import sub as re_sub
 
 from django.conf import settings
@@ -32,7 +32,9 @@ class RepositoryManager(models.Manager):
             directory = re_sub(r'^.*/([^/]+)$', r'\1', url)
         path = path_join(settings.RIOT_REPO_BASE_PATH, directory)
         vcs_repo = vcs.get_repository(path, url=url, vcs=vcs_type)
-        return self.get_or_create(url=vcs_repo.url, path=vcs_repo.directory)
+        return self.get_or_create(url=vcs_repo.url,
+                                  path=relpath(vcs_repo.directory,
+                                               settings.RIOT_REPO_BASE_PATH))
 
 class USBDeviceManager(models.Manager):
     """
@@ -53,8 +55,7 @@ class Repository(models.Model):
     A RIOT related repository
     """
     url = models.URLField(unique=True, blank=False, null=False)
-    path = models.CharField(max_length=256,
-                            default=settings.RIOT_REPO_BASE_PATH)
+    path = models.CharField(max_length=256, unique=True)
     default_branch = models.CharField(max_length=32, blank=False, null=False,
                                       default='master')
     vcs = models.CharField(max_length=8, blank=False, null=False, default='git')
