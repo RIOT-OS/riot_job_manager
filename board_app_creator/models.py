@@ -116,6 +116,7 @@ class Board(models.Model):
                                  limit_choices_to={'has_cpu_tree': True},
                                  verbose_name='cpu_repository')
     usb_device= models.OneToOneField('USBDevice', related_name='board')
+    prototype_jobs = models.ManyToManyField('Jobs', related_name='+')
 
     def __str__(self):
         return self.riot_name
@@ -140,3 +141,22 @@ class ApplicationTree(models.Model):
                                  blank=False)
     application = models.ForeignKey('Application', related_name='applications',
                                     unique=True, blank=False, null=False)
+
+class Job(models.Model):
+    """
+    A representation of a Jenkins job.
+    """
+    namespace = models.IntegerField(choices=((0, 'RIOT'), (1, 'Thirdparty')),
+                                    blank=False, null=False, default=0)
+    name = models.CharField(max_length=64, unique=True, blank=False, null=False)
+    board = models.ForeignKey('Board', related_name='boards')
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def path(self):
+        """
+        The path to the application.
+        """
+        return path_join(settings.JENKINS_JOBS_PATH, self.name)
