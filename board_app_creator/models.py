@@ -120,4 +120,23 @@ class Board(models.Model):
     def __str__(self):
         return self.riot_name
 
+class Application(models.Model):
+    """
+    A representarion of a RIOT application.
+    """
+    name = models.CharField(max_length=16, unique=True, blank=False,
+                            null=False)
+    path = models.CharField(max_length=256, default=None, null=True,
+                            blank=True)
+    repository = models.ManyToManyField('Repository', related_name='applications',
+                                        through='ApplicationTree')
 
+class ApplicationTree(models.Model):
+    """
+    Transit class between Application and Repository.
+    """
+    repo = models.ForeignKey('Repository', related_name='application_trees')
+    tree_name = models.CharField(max_length=256, unique=True, null=False,
+                                 blank=False)
+    application = models.ForeignKey('Application', related_name='applications',
+                                    unique=True, blank=False, null=False)
