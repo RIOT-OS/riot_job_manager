@@ -117,7 +117,7 @@ class Board(models.Model):
                                  limit_choices_to={'has_cpu_tree': True},
                                  verbose_name='cpu_repository')
     usb_device= models.OneToOneField('USBDevice', related_name='board')
-    prototype_jobs = models.ManyToManyField('Jobs', related_name='+')
+    prototype_jobs = models.ManyToManyField('Job', related_name='+')
 
     def __str__(self):
         return self.riot_name
