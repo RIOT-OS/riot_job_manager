@@ -42,6 +42,7 @@ INSTALLED_APPS = (
 
 AUTHENTICATION_BACKENDS = (
     'social.backends.github.GithubOrganizationOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -57,6 +58,10 @@ ROOT_URLCONF = 'riot_job_manager.urls'
 
 WSGI_APPLICATION = 'riot_job_manager.wsgi.application'
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'social.apps.django_app.context_processors.backends',
+    'social.apps.django_app.context_processors.login_redirect',
+)
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
