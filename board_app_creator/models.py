@@ -5,7 +5,9 @@ from os.path import join as path_join, relpath
 from re import sub as re_sub
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.signals import pre_save, post_save
 
 import vcs
 import usb
@@ -171,3 +173,39 @@ class Job(models.Model):
         The path to the application.
         """
         return path_join(settings.JENKINS_JOBS_PATH, self.name)
+
+def repository_pre_save(sender, instance, raw, using, update_fields, **kwargs):
+    if instance.has_boards_tree:
+        error = ValidationError("{} is no tree in the repository.".format(
+            instance.boards_tree))
+        try:
+            if not isinstance(instance.vcs_repo.head.get_file(instance.boards_tree),
+                              vcs.Tree):
+                raise error
+        except ValueError:
+            raise error
+
+def repository_post_save(sender, instance, created, raw, using, update_fields,
+                         **kwargs):
+    for tree, subtrees, _ in instance.vcs_repo.head.base_tree.walk():
+        tree = tree if tree == '.' else tree[2:]
+        if created and instance.has_boards_tree and tree == instance.boards_tree:
+            for riot_name in subtrees:
+                board, created = Board.objects.get_or_create(riot_name=riot_name)
+                if created:
+                    board.repo = instance
+                    try:
+                        board.cpu_repo = Repository.objects.get(is_default=True)
+                    except Repository.DoesNotExist:
+                        pass
+                    board.save()
+        if created and instance.has_application_trees and tree == instance.application_trees.all():
+            for name in subtrees:
+                app, created = Application.objects.get_or_create(name=name)
+                if created:
+                    app.application_tree.update(application=instance)
+                    app.save()
+
+
+pre_save.connect(repository_pre_save, sender=Repository)
+post_save.connect(repository_post_save, sender=Repository)
