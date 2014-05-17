@@ -95,6 +95,8 @@ class GitCommit(Commit):
         super(GitCommit, self).__init__(commit_object.oid.hex)
 
     def get_file(self, path_name):
+        if path_name in ['', '.']:
+            return self.base_tree
         entry = self._commit.tree[path_name]
         obj = self._repo.get(entry.oid)
         if obj.type == pygit2.GIT_OBJ_TREE:
@@ -116,6 +118,8 @@ class GitTree(Tree):
         super(GitTree, self).__init__(tree_object.oid.hex, name)
 
     def get_file(self, path_name):
+        if path_name in ['', '.']:
+            return self
         entry = self._tree[path_name]
         obj = self._repo.get(entry.oid)
         if obj.type == pygit2.GIT_OBJ_TREE:
