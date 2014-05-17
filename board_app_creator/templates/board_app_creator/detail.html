@@ -1,0 +1,9 @@
+{% extends "board_app_creator/base.html" %}
+{% block content %}
+    <ol class="breadcrumb">
+    {% block breadcrumb %}{% endblock %}
+    </ol>
+    <dl class="dl-horizontal">
+        {% block detail %}{% endblock %}
+    </dl>
+{% endblock %}

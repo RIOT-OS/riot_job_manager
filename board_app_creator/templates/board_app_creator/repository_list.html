@@ -1,0 +1,46 @@
+{% extends 'board_app_creator/list.html' %}
+{% load bootstrap3 %}
+{% block title %}Repositories{% endblock %}
+{% block nav-repository-class %}active{% endblock %}
+{% block nav-repository-link %}#{% endblock %}
+{% block header %}Repositories <small><a href="{% url "repository-create" %}">Add repository</a></small>{% endblock %}
+{% block list-table-head %}
+    <th>VCS</th>
+    <th>URL</th>
+    <th>Clone path</th>
+    <th>Default branch</th>
+    <th>Boards tree</th>
+    <th>CPUs tree</th>
+    <th>Application trees</th>
+    <th></th>
+    <th></th>
+    <th></th>
+{% endblock %}
+{% block list-table-row %}
+    <tr class="{% if object.is_default %}info{% endif %}">
+        <td>{{ object.get_vcs_display }}</td>
+        <td><a href="{% url "repository-detail" pk=object.pk %}">{{ object.url }}</td>
+        <td>{{ object.path }}</td>
+        <td>{{ object.default_branch }}</td>
+        <td>{% if object.has_boards_tree %}{{ object.boards_tree }}{% else %}&mdash;{% endif %}</td>
+        <td>{% if object.has_cpu_tree %}{{ object.cpu_tree }}{% else %}&mdash;{% endif %}</td>
+        <td>
+            {% if object.has_application_trees %}
+                {{ object.unique_application_trees|join:", " }}
+                <a href="{% url "repository-add-application-trees" pk=object.pk %}" title="Edit application trees" class="text-muted">
+                    {% bootstrap_icon "pencil" %}
+                </a>
+            {% else %}
+                <a href="{% url "repository-add-application-trees" pk=object.pk %}" class="text-success">
+                    {% bootstrap_icon "plus" %}
+                </a>
+            {% endif %}
+        </td>
+        <td><a href="{% url "repository-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
+        <td><a href="#" title="Reload boards and applications" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
+        <td><a href="{% url "repository-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
+    </tr>
+{% endblock %}
+{% block list-table-empty %}
+    No repositories found. <a href="{% url "repository-create" %}">Add one</a>
+{% endblock %}

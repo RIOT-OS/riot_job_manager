@@ -1,0 +1,43 @@
+{% load bootstrap3 %}
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% bootstrap_css %}
+
+        <title>RIOT Jenkins job manager - {% block title %}Jobs{% endblock %}</title>
+        {% bootstrap_messages %}
+    </head>
+    <body>
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+              <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">RIOT</a>
+              </div>
+              <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav nav-tabs navbar-nav">
+                  <li class="{% block nav-job-class %}{% endblock %}"><a href="#">Jobs</a></li>
+                  <li class="{% block nav-repository-class %}{% endblock %}"><a href="{% block nav-repository-link %}{% url "repository-list" %}{% endblock %}">Repositories</a></li>
+                  <li class="{% block nav-board-class %}{% endblock %}"><a href="{% block nav-board-link %}{% url "board-list" %}{% endblock %}">Boards</a></li>
+                  <li class="{% block nav-application-class %}{% endblock %}"><a href="#">Applications</a></li>
+                </ul>
+              </div>
+            </div>
+        </nav>
+        <div class="container">
+            <div class="page-header">
+                <h1>{% block header %}{% endblock %}
+            </div>
+            {% block content %}{% endblock %}
+        </div>
+        {% bootstrap_javascript %}
+    </body>
+</html>

@@ -1,0 +1,20 @@
+{% extends "board_app_creator/base.html" %}
+{% block breadcrumb %}
+    <li active="active">Repositories</a>
+{% endblock %}
+{% block content %}
+    <table class="table">
+        {% if object_list %}
+        <tr>
+            {% block list-table-head %}{% endblock %}
+        </tr>
+        {% for object in object_list %}
+        <tr>
+            {% block list-table-row %}{% endblock %}
+        </tr>
+        {% endfor %}
+        {% else %}
+            {% block list-table-empty %}{% endblock %}
+        {% endif %}
+    </table>
+{% endblock %}

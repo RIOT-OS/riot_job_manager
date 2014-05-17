@@ -1,0 +1,13 @@
+{% extends "board_app_creator/base.html" %}
+{% load bootstrap3 %}
+{% block content %}
+    <form action="#" method="post" class="form">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% block submit_text %}{% endblock %}
+            </button>
+        {% endbuttons %}
+    </form>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'board_app_creator/base.html' %}
+{% load bootstrap3 %}
+{% block title %}Delete Repository{% endblock %}
+{% block nav-repository-class %}active{% endblock %}
+{% block nav-repository-link %}#{% endblock %}
+{% block header %}Delete Repository {{ object.path }}{% endblock %}
+{% block content %}
+    <form action="#" method="post" class="form">
+        {% csrf_token %}
+        Delete Repository {{ object.path }}?
+        {% buttons %}
+            <button type="submit" class="btn btn-success">
+                {% block submit_text %}Yes{% endblock %}
+            </button>
+            <a href="{% url "repository-list" %}" class="btn btn-danger">
+                No
+            </a>
+        {% endbuttons %}
+    </form>
+{% endblock %}

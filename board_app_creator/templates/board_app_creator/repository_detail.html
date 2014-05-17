@@ -1,0 +1,36 @@
+{% extends 'board_app_creator/detail.html' %}
+{% load bootstrap3 %}
+{% block title %}{{ object.get_vcs_display }} repository: {{ object.url }}{% endblock %}
+{% block nav-repository-class %}active{% endblock %}
+{% block nav-repository-link %}#{% endblock %}
+{% block breadcrumb %}
+    <li><a href="{% url "repository-list" %}">Repositories</a></li>
+    <li active="active">{{ object.path }}</li>
+{% endblock %}
+{% block header %}{{ object.get_vcs_display }} repository <small>{{ object.url }}</small>{% endblock %}
+{% block detail %}
+    <dt>Clone path</dt>
+    <dd>{{ object.path }}</dd>
+    <dt>Default branch</dt>
+    <dd>{{ object.default_branch }}</dd>
+    <dt>Boards tree</dt>
+    {% if object.has_boards_tree %}
+    <dd>{{ object.boards_tree }}</dd>
+    {% else %}
+    <dd><a href="#">{% bootstrap_icon "plus" %}</a></dd>
+    {% endif %}
+    {% if object.has_cpu_tree %}
+    <dt>CPU tree</dt>
+    <dd>{{ object.cpu_tree }}</dd>
+    {% else %}
+    <dd><a href="#">{% bootstrap_icon "plus" %}</a></dd>
+    {% endif %}
+    <dt>Application trees</dt>
+    {% if object.has_application_trees %}
+    {% for t in object.unique_application_trees %}
+    <dd>{{ t }}</dd>
+    {% endfor %}
+    {% else %}
+    <dd><a href="#">{% bootstrap_icon "plus" %}</a></dd>
+    {% endif %}
+{% endblock %}
