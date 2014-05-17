@@ -54,17 +54,21 @@ class Repository(models.Model):
     """
     A RIOT related repository
     """
-    url = models.URLField(unique=True, blank=False, null=False)
+    url = models.CharField(max_length=256, verbose_name="URL", unique=True,
+                           blank=False, null=False)
     path = models.CharField(max_length=256, unique=True)
     default_branch = models.CharField(max_length=32, blank=False, null=False,
                                       default='master')
-    vcs = models.CharField(max_length=8, blank=False, null=False, default='git')
-    has_boards_tree = models.BooleanField(default=False, null=False)
+    vcs = models.CharField(max_length=8, choices=[('git', 'Git')], blank=False,
+                           null=False, default='git', verbose_name="VCS")
+    has_boards_tree = models.BooleanField(default=False, null=False,
+                                       verbose_name="Has Boards tree")
     boards_tree = models.CharField(max_length=256, default=None, null=True,
                                    blank=True)
-    has_cpu_tree = models.BooleanField(default=False, null=False)
+    has_cpu_tree = models.BooleanField(default=False, null=False,
+                                       verbose_name="Has CPU tree")
     cpu_tree = models.CharField(max_length=256, default=None, null=True,
-                                blank=True)
+                                blank=True, verbose_name="CPU tree")
     is_default = models.BooleanField(default=False, null=False)
 
     objects = RepositoryManager()
@@ -80,6 +84,9 @@ class Repository(models.Model):
         if not hasattr(self, '_vcs'):
             self._vcs = vcs.get_repository(self.path, self.vcs, self.url)
         return self._vcs
+
+    def has_application_trees(self):
+        return self.application_trees.exists()
 
 class USBDevice(models.Model):
     """
@@ -109,15 +116,18 @@ class Board(models.Model):
     A board in one of the RIOT repositories.
     """
     riot_name = models.CharField(max_length=16, unique=True, blank=False,
-                                 null=False)
+                                 null=False, verbose_name="RIOT name")
     repo = models.ForeignKey('Repository', related_name='boards',
                              limit_choices_to={'has_boards_tree': True},
-                             verbose_name='repository')
+                             verbose_name='repository', blank=True, null=True)
     cpu_repo = models.ForeignKey('Repository', related_name='cpus',
                                  limit_choices_to={'has_cpu_tree': True},
-                                 verbose_name='cpu_repository')
-    usb_device= models.OneToOneField('USBDevice', related_name='board')
-    prototype_jobs = models.ManyToManyField('Job', related_name='+')
+                                 verbose_name='CPU Repository', blank=True,
+                                 null=True)
+    usb_device= models.OneToOneField('USBDevice', related_name='board',
+                                     blank=True, null=True,
+                                     verbose_name="USB Device")
+    prototype_jobs = models.ManyToManyField('Job', related_name='+', blank=True)
 
     def __str__(self):
         return self.riot_name
