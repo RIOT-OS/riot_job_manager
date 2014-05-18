@@ -8,6 +8,31 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from board_app_creator import models
 
+class ApplicationDetail(DetailView):
+    model = models.Application
+
+class ApplicationList(ListView):
+    model = models.Application
+
+class ApplicationCreate(CreateView):
+    model = models.Application
+    success_url = reverse_lazy('application-list')
+    form_class =  modelform_factory(models.Application,
+                    widgets={"blacklisted_boards": CheckboxSelectMultiple,
+                             "whitelisted_boards": CheckboxSelectMultiple})
+
+
+class ApplicationDelete(DeleteView):
+    model = models.Application
+    success_url = reverse_lazy('application-list')
+
+class ApplicationUpdate(UpdateView):
+    model = models.Application
+    success_url = reverse_lazy('application-list')
+    form_class =  modelform_factory(models.Application,
+                    widgets={"blacklisted_boards": CheckboxSelectMultiple,
+                             "whitelisted_boards": CheckboxSelectMultiple})
+
 class BoardDetail(DetailView):
     model = models.Board
 

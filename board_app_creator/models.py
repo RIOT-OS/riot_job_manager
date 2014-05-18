@@ -95,6 +95,9 @@ class Repository(models.Model):
     def has_application_trees(self):
         return self.application_trees.exists()
 
+    def unique_application_trees(self):
+        return sorted(list(set(self.application_trees.values_list('tree_name', flat=True))))
+
 class USBDevice(models.Model):
     """
     Representation of USB devices.
@@ -148,22 +151,30 @@ class Application(models.Model):
     """
     A representarion of a RIOT application.
     """
-    name = models.CharField(max_length=16, unique=True, blank=False,
-                            null=False)
+    name = models.CharField(max_length=16, blank=False, null=False)
     path = models.CharField(max_length=256, default=None, null=True,
                             blank=True)
     repository = models.ManyToManyField('Repository', related_name='applications',
                                         through='ApplicationTree')
+    blacklisted_boards = models.ManyToManyField('Board',
+            related_name='blacklisted_applications')
+    whitelisted_boards = models.ManyToManyField('Board',
+            related_name='whitelisted_applications')
 
 class ApplicationTree(models.Model):
     """
     Transit class between Application and Repository.
     """
     repo = models.ForeignKey('Repository', related_name='application_trees')
-    tree_name = models.CharField(max_length=256, unique=True, null=False,
-                                 blank=False)
-    application = models.ForeignKey('Application', related_name='applications',
-                                    unique=True, blank=False, null=False)
+    tree_name = models.CharField(max_length=256, null=False, blank=False)
+    application = models.ForeignKey('Application', related_name='application_tree',
+                                    unique=True, blank=True, null=True)
+
+    class Meta:
+        unique_together = ("repo", "tree_name", "application")
+
+    def __str__(self):
+        return self.tree_name
 
 class Job(models.Model):
     """

@@ -1,0 +1,33 @@
+{% extends 'board_app_creator/list.html' %}
+{% load bootstrap3 %}
+{% block title %}Applications{% endblock %}
+{% block nav-application-class %}active{% endblock %}
+{% block nav-application-link %}#{% endblock %}
+{% block header %}Applications <small><a href="{% url "application-create" %}">Add application</a></small>{% endblock %}
+{% block list-table-head %}
+    <th>Name</th>
+    <th>Repository</th>
+    <th>Path</th>
+    <th></th>
+    <th></th>
+    <th></th>
+{% endblock %}
+{% block list-table-row %}
+    <tr>
+        <td><a href="{% url "application-detail" pk=object.pk %}">{{ object.name }}</a></td>
+        <td>
+            {% for repo in object.repository.all %}
+                <a href="{% url "repository-detail" pk=repo.pk %}">{{ repo }}</a>{% if not forloop.last %},{% endif %}
+            {% empty %}
+                &mdash;
+            {% endfor %}
+        </td>
+        <td>{{ object.path }}</td>
+        <td><a href="{% url "application-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
+        <td><a href="#" title="Reload application" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
+        <td><a href="{% url "application-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
+    </tr>
+{% endblock %}
+{% block list-table-empty %}
+    No repositories found. <a href="{% url "repository-create" %}">Add one</a>
+{% endblock %}

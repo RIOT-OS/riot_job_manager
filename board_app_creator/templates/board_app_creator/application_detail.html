@@ -1,0 +1,32 @@
+{% extends 'board_app_creator/detail.html' %}
+{% load bootstrap3 %}
+{% block title %}Application: {{ object.name }}{% endblock %}
+{% block nav-application-class %}active{% endblock %}
+{% block nav-application-link %}#{% endblock %}
+{% block breadcrumb %}
+    <li><a href="{% url "application-list" %}">Applications</a></li>
+    <li active="active">{{ object.name }}</li>
+{% endblock %}
+{% block header %}Application <small>{{ object.name }}</small>{% endblock %}
+{% block detail %}
+    {% if object.repository.exists %}
+    <dt>Repository</dt>
+    {% for r in object.repository.all %}
+    <dd><a href="{% url "repository-detail" pk=r.pk %}">{{ r }}</a></dd>
+    {% endfor %}
+    {% endif %}
+    <dt>Path</dt>
+    <dd>{{ object.path }}</dd>
+    {% if object.blacklisted_boards.exists %}
+    <dt>Blacklisted boards</dt>
+    {% for b in object.blacklisted_boards.all %}
+    <dd><a href="{% url "board-detail" pk=b.pk %}">{{ b }}</a></dd>
+    {% endfor %}
+    {% endif %}
+    {% if object.whitelisted_boards.exists %}
+    <dt>Whitelisted boards</dt>
+    {% for b in object.whitelisted_boards.all %}
+    <dd><a href="{% url "board-detail" pk=b.pk %}">{{ b }}</a></dd>
+    {% endfor %}
+    {% endif %}
+{% endblock %}

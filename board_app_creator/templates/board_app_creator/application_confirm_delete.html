@@ -1,0 +1,20 @@
+{% extends 'board_app_creator/base.html' %}
+{% load bootstrap3 %}
+{% block title %}Delete Application{% endblock %}
+{% block nav-application-class %}active{% endblock %}
+{% block nav-application-link %}#{% endblock %}
+{% block header %}Delete Application {{ object.path }}{% endblock %}
+{% block content %}
+    <form action="#" method="post" class="form">
+        {% csrf_token %}
+        Delete Application {{ object.name }}?
+        {% buttons %}
+            <button type="submit" class="btn btn-success">
+                Yes
+            </button>
+            <a href="{% url "application-list" %}" class="btn btn-danger">
+                No
+            </a>
+        {% endbuttons %}
+    </form>
+{% endblock %}
