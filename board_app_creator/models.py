@@ -50,7 +50,12 @@ class USBDeviceManager(models.Manager):
         Port.objects.update(usb_device=None)
         for dev in usb.get_device_list():
             device, _ = self.get_or_create(usb_id=dev.usb_id, tag=dev.tag)
-            device.ports.get_or_create(path=dev.device)
+            try:
+                port = Port.objects.get(path=dev.device)
+                port.usb_device = device
+            except Port.DoesNotExist:
+                port = Port(path=dev.device)
+            port.save()
 
 class Repository(models.Model):
     """
@@ -101,14 +106,19 @@ class USBDevice(models.Model):
     objects = USBDeviceManager()
 
     def __str__(self):
-        return self.usb_id
+        connected = " [not connected]" if not self.ports.exists() else ""
+        if self.tag:
+            return "{} ({}){}".format(self.usb_id, self.tag, connected)
+        else:
+            return "{}{}".format(self.usb_id)
 
 class Port(models.Model):
     """
     Ports a board is connected on to this system.
     """
     path = models.CharField(max_length=20, unique=True, blank=False, null=False)
-    usb_device = models.ForeignKey('USBDevice', related_name='ports')
+    usb_device = models.ForeignKey('USBDevice', related_name='ports', blank=True,
+                                   null=True)
 
     def __str__(self):
         return self.path

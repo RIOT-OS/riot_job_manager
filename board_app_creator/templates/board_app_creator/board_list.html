@@ -1,0 +1,31 @@
+{% extends 'board_app_creator/list.html' %}
+{% load bootstrap3 %}
+{% block title %}Boards{% endblock %}
+{% block nav-board-class %}active{% endblock %}
+{% block nav-board-link %}#{% endblock %}
+{% block header %}Boards <small><a href="{% url "board-create" %}">Add board</a></small>{% endblock %}
+{% block list-table-head %}
+    <th>RIOT name</th>
+    <th>Repository</th>
+    <th>CPU Repository</th>
+    <th>USB Device</th>
+    <th>Prototype job</th>
+    <th></th>
+    <th></th>
+    <th></th>
+{% endblock %}
+{% block list-table-row %}
+    <tr>
+        <td><a href="{% url "board-detail" pk=object.pk %}">{{ object.riot_name }}</a></td>
+        <td><a href="{% url "repository-detail" pk=object.repo.pk %}">{{ object.repo }}</a></td>
+        <td><a href="{% url "repository-detail" pk=object.cpu_repo.pk %}">{% if object.cpu_repo %}{{ object.cpu_repo }}{% else %}&mdash;{% endif %}</a></td>
+        <td>{% if object.usb_device %}{{ object.usb_device }}{% else %}&mdash;{% endif %}</td>
+        <td>{% if object.prototype_jobs %}{{ object.prototype_jobs.all|join:", " }}{% else %}&mdash;{% endif %}</td>
+        <td><a href="{% url "board-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
+        <td><a href="#" title="Reload applications" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
+        <td><a href="{% url "board-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
+    </tr>
+{% endblock %}
+{% block list-table-empty %}
+    No repositories found. <a href="{% url "repository-create" %}">Add one</a>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'board_app_creator/detail.html' %}
+{% load bootstrap3 %}
+{% block title %}Board: {{ object.riot_name }}{% endblock %}
+{% block nav-board-class %}active{% endblock %}
+{% block nav-board-link %}#{% endblock %}
+{% block breadcrumb %}
+    <li><a href="{% url "board-list" %}">Boards</a></li>
+    <li active="active">{{ object.riot_name }}</li>
+{% endblock %}
+{% block header %}Board <small>{{ object.riot_name }}</small>{% endblock %}
+{% block detail %}
+    <dt>Repository</dt>
+    <dd>{{ object.repo }}</dd>
+    <dt>CPU Repository</dt>
+    <dd>{{ object.cpu_repo }}</dd>
+    {% if object.usb_device %}
+    <dt>USB Device</dt>
+    <dd>{{ object.usb_device }}</dd>
+    {% endif %}
+    {% if object.prototype_jobs.objects.exists %}
+    <dt>Prototype jobs</dt>
+    {% for t in object.application_trees.all %}
+    <dd>{{ t }}</dd>
+    {% endfor %}
+    {% endif %}
+{% endblock %}
