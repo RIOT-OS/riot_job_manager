@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^repository/?$', views.RepositoryList.as_view(), name='repository-list'),
     url(r'^repository/create/?$', views.RepositoryCreate.as_view(), name='repository-create'),
     url(r'^repository/(?P<pk>\d+)/?$', views.RepositoryDetail.as_view(), name='repository-detail'),
+    url(r'^repository/(?P<pk>\d+)/add_application_trees/$', views.RepositoryAddApplicationTrees.as_view(), name='repository-add-application-trees'),
     url(r'^repository/(?P<pk>\d+)/delete/?$', views.RepositoryDelete.as_view(), name='repository-delete'),
     url(r'^repository/(?P<pk>\d+)/update/?$', views.RepositoryUpdate.as_view(), name='repository-update'),
 ]
