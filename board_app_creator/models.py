@@ -30,7 +30,6 @@ class RepositoryManager(models.Manager):
         if url[-4:] == ".git":
             directory = re.sub(r'^.*/([^/]+)\.git$', r'\1', url)
         else:
-            print(url[-4:])
             directory = re.sub(r'^.*/([^/]+)$', r'\1', url)
         path = path_join(settings.RIOT_REPO_BASE_PATH, directory)
         vcs_repo = vcs.get_repository(path, url=url, vcs=vcs_type)
