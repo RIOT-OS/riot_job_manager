@@ -3,7 +3,7 @@
 {% block title %}Repositories{% endblock %}
 {% block nav-repository-class %}active{% endblock %}
 {% block nav-repository-link %}#{% endblock %}
-{% block header %}Repositories <small><a href="{% url "repository-create" %}">Add repository</a></small>{% endblock %}
+{% block header %}Repositories <small><a class="btn btn-success" href="{% url "repository-create" %}">{% bootstrap_icon "plus" %} Add repository</a></small>{% endblock %}
 {% block list-table-head %}
     <th>VCS</th>
     <th>URL</th>

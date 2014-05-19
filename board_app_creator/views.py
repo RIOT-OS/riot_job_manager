@@ -30,6 +30,10 @@ class ApplicationCreate(CreateView):
                     widgets={"blacklisted_boards": CheckboxSelectMultiple,
                              "whitelisted_boards": CheckboxSelectMultiple})
 
+    def get_context_data(self, **kwargs):
+        context = super(ApplicationCreate, self).get_context_data(**kwargs)
+        context['form_verb'] = "Add"
+        return context
 
 class ApplicationDelete(DeleteView):
     model = models.Application
@@ -41,6 +45,11 @@ class ApplicationUpdate(UpdateView):
     form_class =  modelform_factory(models.Application,
                     widgets={"blacklisted_boards": CheckboxSelectMultiple,
                              "whitelisted_boards": CheckboxSelectMultiple})
+
+    def get_context_data(self, **kwargs):
+        context = super(ApplicationUpdate, self).get_context_data(**kwargs)
+        context['form_verb'] = "Edit"
+        return context
 
 def application_toggle_no_application(request, pk):
     app = get_object_or_404(models.Application, pk=pk)
@@ -82,6 +91,11 @@ class BoardCreate(CreateView):
         models.USBDevice.objects.update_from_system()
         return super(BoardCreate, self).post(*args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(BoardCreate, self).get_context_data(**kwargs)
+        context['form_verb'] = "Add"
+        return context
+
 class BoardDelete(DeleteView):
     model = models.Board
     success_url = reverse_lazy('board-list')
@@ -99,6 +113,11 @@ class BoardUpdate(UpdateView):
     def post(self, *args, **kwargs):
         models.USBDevice.objects.update_from_system()
         return super(BoardUpdate, self).post(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(BoardUpdate, self).get_context_data(**kwargs)
+        context['form_verb'] = "Edit"
+        return context
 
 def board_toggle_no_board(request, pk):
     board = get_object_or_404(models.Board, pk=pk)
@@ -120,7 +139,8 @@ class RepositoryAddApplicationTrees(View):
         choices = [(d[0][2:], d[0]) \
             for d in repo.vcs_repo.head.base_tree.walk()]
 
-        form = self.form_class(choices=choices)
+        preselect = repo.application_trees.values_list('tree_name', flat=True)
+        form = self.form_class(initial={'trees': preselect}, choices=choices)
 
         return render(request, self.template_name, {'form': form, 'repo_tree': repo.vcs_repo.head.base_tree.walk()})
 
@@ -164,6 +184,11 @@ class RepositoryCreate(CreateView):
     model = models.Repository
     success_url = reverse_lazy('repository-list')
 
+    def get_context_data(self, **kwargs):
+        context = super(RepositoryCreate, self).get_context_data(**kwargs)
+        context['form_verb'] = "Add"
+        return context
+
 class RepositoryDelete(DeleteView):
     model = models.Repository
     success_url = reverse_lazy('repository-list')
@@ -171,6 +196,11 @@ class RepositoryDelete(DeleteView):
 class RepositoryUpdate(UpdateView):
     model = models.Repository
     success_url = reverse_lazy('repository-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(RepositoryUpdate, self).get_context_data(**kwargs)
+        context['form_verb'] = "Edit"
+        return context
 
 def repository_update_applications_and_boards(request, pk):
     repo = get_object_or_404(models.Repository, pk=pk)

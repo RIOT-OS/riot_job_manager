@@ -3,7 +3,7 @@
 {% block title %}Boards{% endblock %}
 {% block nav-board-class %}active{% endblock %}
 {% block nav-board-link %}#{% endblock %}
-{% block header %}Boards <small><a href="{% url "board-create" %}">Add board</a></small>{% endblock %}
+{% block header %}Boards <small><a class="btn btn-success" href="{% url "board-create" %}">{% bootstrap_icon "plus" %} Add board</a></small>{% endblock %}
 {% block list-table-head %}
     <th>RIOT name</th>
     <th>Repository</th>

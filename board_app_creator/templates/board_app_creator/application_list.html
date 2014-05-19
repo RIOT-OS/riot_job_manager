@@ -3,7 +3,7 @@
 {% block title %}Applications{% endblock %}
 {% block nav-application-class %}active{% endblock %}
 {% block nav-application-link %}#{% endblock %}
-{% block header %}Applications <small><a href="{% url "application-create" %}">Add application</a></small>{% endblock %}
+{% block header %}Applications <small><a class="btn btn-success" href="{% url "application-create" %}">{% bootstrap_icon "plus" %} Add application</a></small>{% endblock %}
 {% block list-table-head %}
     <th>Name</th>
     <th>Repository</th>

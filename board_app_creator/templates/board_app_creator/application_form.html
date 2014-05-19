@@ -1,7 +1,7 @@
 {% extends 'board_app_creator/form.html' %}
 {% load bootstrap3 %}
-{% block title %}Add Application{% endblock %}
+{% block title %}{{ form_verb }} Application{% endblock %}
 {% block nav-application-class %}active{% endblock %}
 {% block nav-application-link %}#{% endblock %}
-{% block header %}Add Application{% endblock %}
-{% block submit_text %}{% bootstrap_icon "plus" %} Add{% endblock %}
+{% block header %}{{ form_verb }} Application{% endblock %}
+{% block submit_text %}{% if form_verb == "Add" %}{% bootstrap_icon "plus" %}{% else %}{% bootstrap_icon "pencil" %}{% endif %} {{ form_verb }}{% endblock %}
