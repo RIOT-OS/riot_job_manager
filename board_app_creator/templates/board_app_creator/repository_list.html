@@ -37,7 +37,7 @@
             {% endif %}
         </td>
         <td><a href="{% url "repository-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
-        <td><a href="#" title="Reload boards and applications" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
+        <td><a href="{% url "repository-renew" pk=object.pk %}" title="Reload boards and applications" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
         <td><a href="{% url "repository-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
     </tr>
 {% endblock %}

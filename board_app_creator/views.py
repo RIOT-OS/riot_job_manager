@@ -18,6 +18,11 @@ class ApplicationDetail(DetailView):
 class ApplicationList(ListView):
     model = models.Application
 
+    def get_context_data(self, **kwargs):
+        context = super(ApplicationList, self).get_context_data(**kwargs)
+        context['hidden_shown'] = context['application_list'].filter(no_application=True).exists()
+        return context
+
 class ApplicationCreate(CreateView):
     model = models.Application
     success_url = reverse_lazy('application-list')
@@ -37,11 +42,26 @@ class ApplicationUpdate(UpdateView):
                     widgets={"blacklisted_boards": CheckboxSelectMultiple,
                              "whitelisted_boards": CheckboxSelectMultiple})
 
+def application_toggle_no_application(request, pk):
+    app = get_object_or_404(models.Application, pk=pk)
+    app.no_application = not app.no_application
+    app.save()
+
+    if app.no_application:
+        return HttpResponseRedirect(reverse_lazy('application-list'))
+    else:
+        return HttpResponseRedirect(reverse_lazy('application-hidden'))
+
 class BoardDetail(DetailView):
     model = models.Board
 
 class BoardList(ListView):
     model = models.Board
+
+    def get_context_data(self, **kwargs):
+        context = super(BoardList, self).get_context_data(**kwargs)
+        context['hidden_shown'] = context['board_list'].filter(no_board=True).exists()
+        return context
 
 class BoardCreate(CreateView):
     model = models.Board
@@ -74,6 +94,16 @@ class BoardUpdate(UpdateView):
     def post(self, *args, **kwargs):
         models.USBDevice.objects.update_from_system()
         return super(BoardUpdate, self).post(*args, **kwargs)
+
+def board_toggle_no_board(request, pk):
+    board = get_object_or_404(models.Board, pk=pk)
+    board.no_board = not board.no_board
+    board.save()
+
+    if board.no_board:
+        return HttpResponseRedirect(reverse_lazy('board-list'))
+    else:
+        return HttpResponseRedirect(reverse_lazy('board-hidden'))
 
 class RepositoryAddApplicationTrees(View):
     form_class = forms.TreeSelectMultipleForm

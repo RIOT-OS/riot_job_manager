@@ -57,6 +57,32 @@ class USBDeviceManager(models.Manager):
                 port = Port(path=dev.device)
             port.save()
 
+class BoardManager(models.Manager):
+    """
+    Model manager for Board
+    """
+    def all_real(self):
+        """
+        All boards that do not have the no_board flag set.
+        """
+        return self.filter(no_board=False)
+
+    def hidden_shown(self):
+        return self.filter(no_board=True).exists()
+
+class ApplicationManager(models.Manager):
+    """
+    Model manager for Application
+    """
+    def all_real(self):
+        """
+        All applications that do not have the no_application flag set.
+        """
+        return self.filter(no_application=False)
+
+    def hidden_shown(self):
+        return self.filter(no_application=True).exists()
+
 class Repository(models.Model):
     """
     A RIOT related repository
@@ -143,6 +169,10 @@ class Board(models.Model):
                                      blank=True, null=True,
                                      verbose_name="USB Device")
     prototype_jobs = models.ManyToManyField('Job', related_name='+', blank=True)
+    no_board = models.BooleanField(default=False, blank=False, null=False,
+                                   editable=False)
+
+    objects = BoardManager()
 
     def __str__(self):
         return self.riot_name
@@ -160,6 +190,10 @@ class Application(models.Model):
             related_name='blacklisted_applications')
     whitelisted_boards = models.ManyToManyField('Board',
             related_name='whitelisted_applications')
+    no_application = models.BooleanField(default=False, blank=False, null=False,
+                                         editable=False)
+
+    objects = ApplicationManager()
 
 class ApplicationTree(models.Model):
     """

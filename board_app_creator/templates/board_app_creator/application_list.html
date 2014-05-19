@@ -9,11 +9,18 @@
     <th>Repository</th>
     <th>Path</th>
     <th></th>
+    <th>
+        {% if hidden_shown %}
+            <a href="{% url "application-list" %}" title="Do not show hidden" class="text-muted">{% bootstrap_icon "eye-close" %}</a>
+        {% else %}
+            <a href="{% url "application-hidden" %}" title="Show hidden" class="text-muted">{% bootstrap_icon "eye-open" %}</a>
+        {% endif %}
+    </th>
     <th></th>
     <th></th>
 {% endblock %}
 {% block list-table-row %}
-    <tr>
+    <tr class="{% if object.no_application %}danger{% endif %}">
         <td><a href="{% url "application-detail" pk=object.pk %}">{{ object.name }}</a></td>
         <td>
             {% for repo in object.repository.all %}
@@ -24,7 +31,18 @@
         </td>
         <td>{{ object.path }}</td>
         <td><a href="{% url "application-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
-        <td><a href="#" title="Reload application" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
+        <td>
+            {% if object.no_application %}
+                <a href="{% url "application-ignore" pk=object.pk %}" title="Handle as application" class="text-muted">
+                    {% bootstrap_icon "eye-open" %}
+                </a>
+            {% else %}
+                <a href="{% url "application-ignore" pk=object.pk %}" title="Do not handle as application" class="text-muted">
+                    {% bootstrap_icon "eye-close" %}
+                </a>
+            {% endif %}
+        </td>
+        <td><a href="{% url "application-renew" pk=object.pk %}" title="Reload application" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
         <td><a href="{% url "application-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
     </tr>
 {% endblock %}
