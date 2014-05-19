@@ -1,9 +1,22 @@
 {% extends "board_app_creator/base.html" %}
 {% block content %}
-    <ol class="breadcrumb">
-    {% block breadcrumb %}{% endblock %}
-    </ol>
-    <dl class="dl-horizontal">
-        {% block detail %}{% endblock %}
-    </dl>
+    <div class="row">
+        <div class="col-md-12">
+            <ol class="breadcrumb">
+            {% block breadcrumb %}{% endblock %}
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-2 col-md-offset-10">
+            <div class="text-right">
+                {% block actionbar %}{% endblock %}
+            </div>
+        </div>
+        <div class="col-md-10">
+            <dl class="dl-horizontal">
+                {% block detail %}{% endblock %}
+            </dl>
+        </div>
+    </div>
 {% endblock %}

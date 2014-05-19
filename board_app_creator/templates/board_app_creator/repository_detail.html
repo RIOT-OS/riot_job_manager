@@ -8,6 +8,11 @@
     <li active="active">{{ object.path }}</li>
 {% endblock %}
 {% block header %}{{ object.get_vcs_display }} repository <small>{{ object.url }}</small>{% endblock %}
+{% block actionbar %}
+    <a href="{% url "repository-update" pk=object.pk %}" title="Edit">{% bootstrap_icon "pencil" %}</a>
+    <a href="{% url "repository-renew" pk=object.pk %}" title="Reload boards and applications">{% bootstrap_icon "refresh" %}</a>
+    <a href="{% url "repository-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a>
+{% endblock %}
 {% block detail %}
     <dt>Clone path</dt>
     <dd>{{ object.path }}</dd>

@@ -8,6 +8,17 @@
     <li active="active">{{ object.name }}</li>
 {% endblock %}
 {% block header %}Application <small>{{ object.name }}</small>{% endblock %}
+{% block actionbar %}
+        {% if object.no_application %}
+            <a href="{% url "application-ignore" pk=object.pk %}" title="Handle as application">{% bootstrap_icon "eye-open" %}</a>
+        {% else %}
+            <a href="{% url "application-ignore" pk=object.pk %}" title="Do not handle as application">
+                {% bootstrap_icon "eye-close" %}
+            </a>
+        {% endif %}
+        <a href="{% url "application-renew" pk=object.pk %}" title="Reload application">{% bootstrap_icon "refresh" %}</a>
+        <a href="{% url "application-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a>
+{% endblock %}
 {% block detail %}
     {% if object.repository.exists %}
     <dt>Repository</dt>

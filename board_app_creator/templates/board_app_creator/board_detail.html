@@ -8,6 +8,14 @@
     <li active="active">{{ object.riot_name }}</li>
 {% endblock %}
 {% block header %}Board <small>{{ object.riot_name }}</small>{% endblock %}
+{% block actionbar %}
+    {% if object.no_board %}
+        <a href="{% url "board-ignore" pk=object.pk %}" title="Handle as board">{% bootstrap_icon "eye-open" %}</a>
+    {% else %}
+        <a href="{% url "board-ignore" pk=object.pk %}" title="Do not handle as board">{% bootstrap_icon "eye-close" %}</a>
+    {% endif %}
+    <a href="{% url "board-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a>
+{% endblock %}
 {% block detail %}
     <dt>Repository</dt>
     <dd>{{ object.repo }}</dd>
