@@ -1,8 +1,8 @@
 """
 Models for board_app_creator application.
 """
+import re
 from os.path import join as path_join, relpath
-from re import sub as re_sub
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -28,10 +28,10 @@ class RepositoryManager(models.Manager):
         Get or create a repo from URL
         """
         if url[-4:] == ".git":
-            directory = re_sub(r'^.*/([^/]+)\.git$', r'\1', url)
+            directory = re.sub(r'^.*/([^/]+)\.git$', r'\1', url)
         else:
             print(url[-4:])
-            directory = re_sub(r'^.*/([^/]+)$', r'\1', url)
+            directory = re.sub(r'^.*/([^/]+)$', r'\1', url)
         path = path_join(settings.RIOT_REPO_BASE_PATH, directory)
         vcs_repo = vcs.get_repository(path, url=url, vcs=vcs_type)
         return self.get_or_create(url=vcs_repo.url,
@@ -127,6 +127,42 @@ class Repository(models.Model):
     def unique_application_trees(self):
         return sorted(list(set(self.application_trees.values_list('tree_name', flat=True))))
 
+    def update_boards(self):
+        for tree in self.vcs_repo.head.get_file(self.boards_tree).trees:
+            board, created = Board.objects.get_or_create(riot_name=tree.name)
+
+            if not board.no_board:
+                path = path_join(self.boards_tree, tree.name)
+                board.path = path
+                board.repo = self
+                try:
+                    board.cpu_repo = Repository.objects.get(is_default=True)
+                except Repository.DoesNotExist:
+                    pass
+                board.save()
+
+    def update_applications(self):
+        for tree_name in self.unique_application_trees():
+            for app in self.vcs_repo.head.get_file(tree_name).trees:
+                abs_path = path_join(tree_name, app.name)
+                makefile = path_join(abs_path, 'Makefile')
+                try:
+                    app_name, blacklist, whitelist = Application.get_name_and_lists_from_makefile(self, makefile)
+                except Application.DoesNotExist:
+                    continue
+                except AssertionError:
+                    continue
+                appobj, created = Application.objects.get_or_create(name=app_name,
+                                                                    path=abs_path)
+                if created or not appobj.no_application:
+                    app_tree, created = ApplicationTree.objects.get_or_create(
+                        tree_name=tree_name, repo=self, application=appobj)
+                    for board in Board.objects.all():
+                        if board.riot_name in blacklist and board not in appobj.blacklisted_boards.all():
+                            appobj.blacklisted_boards.add(board)
+                        if board.riot_name in whitelist and board not in appobj.blacklisted_boards.all():
+                            appobj.whitelisted_boards.add(board)
+
 class USBDevice(models.Model):
     """
     Representation of USB devices.
@@ -204,6 +240,57 @@ class Application(models.Model):
     class Meta:
         ordering = ['name']
 
+    @staticmethod
+    def get_name_and_lists_from_makefile(repository, makefile_path):
+            try:
+                makefile_blob = repository.vcs_repo.head.get_file(makefile_path)
+            except KeyError:
+                raise Application.DoesNotExist("Application's Makefile does not exist")
+            if not isinstance(makefile_blob, vcs.Blob):
+                raise Application.DoesNotExist("Application's Makefile is no file")
+            makefile_content = makefile_blob.read()
+            app_name = ''
+            blacklist = []
+            whitelist = []
+            next_line_blacklist = False
+            next_line_whitelist = False
+            for line in makefile_content.splitlines():
+                if next_line_blacklist:
+                    blacklist.extend(re.sub(r"\s*(.+)\s*\\?$", r'\1', line).split(' '))
+                    if not line.endswith('\\'):
+                        next_line_blacklist = False
+                if next_line_whitelist:
+                    whitelist.extend(re.sub(r"\s*(.+)\s*\\?$", r'\1', line).split(' '))
+                    if not line.endswith('\\'):
+                        next_line_whitelist = False
+                if re.match(r".*PROJECT\s*[:?]?=\s*([^\s]+).*", line):
+                    app_name = re.sub(r".*PROJECT\s*=\s*([^\s]+).*", r'\1', line)
+                if re.match(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
+                    blacklist.extend(re.sub(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
+                    if line.endswith('\\'):
+                        blacklist.pop(-1)
+                        next_line_blacklist = True
+                if re.match(r".*BOARD_WHITELIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
+                    whitelist.extend(re.sub(r".*BOARD_WHITELIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
+                    if line.endswith('\\'):
+                        whitelist.pop(-1)
+                        next_line_whitelist = True
+            if app_name == '':
+                raise AssertionError("Application name not in Makefile.")
+            return app_name, blacklist, whitelist
+
+    def update_from_makefile(self):
+        if self.no_application:
+            makefile_path = path_join(self.path, 'Makefile')
+            app_name, blacklist, whitelist = Application.get_name_and_lists_from_makefile(self.repository, makefile_path)
+            self.name = app_name
+            for board in models.Board.objects.all():
+                if board.riot_name in blacklist and board not in self.blacklisted_boards.all():
+                    self.blacklisted_boards.add(board)
+                if board.riot_name in whitelist and board not in self.blacklisted_boards.all():
+                    self.whitelisted_boards.add(board)
+            self.save()
+
 class ApplicationTree(models.Model):
     """
     Transit class between Application and Repository.
@@ -254,22 +341,7 @@ def repository_post_save(sender, instance, created, raw, using, update_fields,
     for tree, subtrees, _ in instance.vcs_repo.head.base_tree.walk():
         tree = tree if tree == '.' else tree[2:]
         if created and instance.has_boards_tree and tree == instance.boards_tree:
-            for riot_name in subtrees:
-                board, created = Board.objects.get_or_create(riot_name=riot_name)
-                if created:
-                    board.repo = instance
-                    try:
-                        board.cpu_repo = Repository.objects.get(is_default=True)
-                    except Repository.DoesNotExist:
-                        pass
-                    board.save()
-        if created and instance.has_application_trees and tree == instance.application_trees.all():
-            for name in subtrees:
-                app, created = Application.objects.get_or_create(name=name)
-                if created:
-                    app.application_tree.update(application=instance)
-                    app.save()
-
+            instance.update_boards()
 
 pre_save.connect(repository_pre_save, sender=Repository)
 post_save.connect(repository_post_save, sender=Repository)

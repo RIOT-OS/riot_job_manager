@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^application/(?P<pk>\d+)/?$', views.ApplicationDetail.as_view(), name='application-detail'),
     url(r'^application/(?P<pk>\d+)/delete/?$', views.ApplicationDelete.as_view(), name='application-delete'),
     url(r'^application/(?P<pk>\d+)/ignore/?$', views.application_toggle_no_application, name='application-ignore'),
+    url(r'^application/(?P<pk>\d+)/renew/?$', views.application_update_from_makefile, name='application-renew'),
     url(r'^application/(?P<pk>\d+)/update/?$', views.ApplicationUpdate.as_view(), name='application-update'),
     url(r'^board/?$', views.BoardList.as_view(queryset=models.Board.objects.all_real()), name='board-list'),
     url(r'^board/create/?$', views.BoardCreate.as_view(), name='board-create'),
@@ -24,5 +25,6 @@ urlpatterns = [
     url(r'^repository/(?P<pk>\d+)/?$', views.RepositoryDetail.as_view(), name='repository-detail'),
     url(r'^repository/(?P<pk>\d+)/add_application_trees/$', views.RepositoryAddApplicationTrees.as_view(), name='repository-add-application-trees'),
     url(r'^repository/(?P<pk>\d+)/delete/?$', views.RepositoryDelete.as_view(), name='repository-delete'),
+    url(r'^repository/(?P<pk>\d+)/renew/?$', views.repository_update_applications_and_boards, name='repository-renew'),
     url(r'^repository/(?P<pk>\d+)/update/?$', views.RepositoryUpdate.as_view(), name='repository-update'),
 ]

@@ -52,6 +52,11 @@ def application_toggle_no_application(request, pk):
     else:
         return HttpResponseRedirect(reverse_lazy('application-hidden'))
 
+def application_update_from_makefile(request, pk):
+    app = get_object_or_404(models.Application, pk=pk)
+    app.update_from_makefile()
+    return HttpResponseRedirect(reverse_lazy('application-list'))
+
 class BoardDetail(DetailView):
     model = models.Board
 
@@ -130,41 +135,12 @@ class RepositoryAddApplicationTrees(View):
             for tree in form.cleaned_data['trees']:
                 for app in repo.vcs_repo.head.get_file(tree).trees:
                     abs_path = path_join(tree, app.name)
-                    makefile = path_join(tree, app.name, 'Makefile')
+                    makefile = path_join(abs_path, 'Makefile')
                     try:
-                        makefile_blob = repo.vcs_repo.head.get_file(makefile)
-                    except KeyError:
+                        app_name, blacklist, whitelist = models.Application.get_name_and_lists_from_makefile(repo, makefile)
+                    except models.Application.DoesNotExist:
                         continue
-                    if not isinstance(makefile_blob, vcs.Blob):
-                        continue
-                    makefile_content = makefile_blob.read()
-                    app_name = ''
-                    blacklist = []
-                    whitelist = []
-                    next_line_blacklist = False
-                    next_line_whitelist = False
-                    for line in makefile_content.splitlines():
-                        if next_line_blacklist:
-                            blacklist.extend(re.sub(r"\s*(.+)\s*\\?$", r'\1', line).split(' '))
-                            if not line.endswith('\\'):
-                                next_line_blacklist = False
-                        if next_line_whitelist:
-                            whitelist.extend(re.sub(r"\s*(.+)\s*\\?$", r'\1', line).split(' '))
-                            if not line.endswith('\\'):
-                                next_line_whitelist = False
-                        if re.match(r".*PROJECT\s*[:?]?=\s*([^\s]+).*", line):
-                            app_name = re.sub(r".*PROJECT\s*=\s*([^\s]+).*", r'\1', line)
-                        if re.match(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
-                            blacklist.extend(re.sub(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
-                            if line.endswith('\\'):
-                                blacklist.pop(-1)
-                                next_line_blacklist = True
-                        if re.match(r".*BOARD_WHITELIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
-                            whitelist.extend(re.sub(r".*BOARD_WHITELIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
-                            if line.endswith('\\'):
-                                whitelist.pop(-1)
-                                next_line_whitelist = True
-                    if app_name == '':
+                    except AssertionError:
                         continue
                     appobj = models.Application(name=app_name, path=abs_path)
                     appobj.save()
@@ -195,5 +171,11 @@ class RepositoryDelete(DeleteView):
 class RepositoryUpdate(UpdateView):
     model = models.Repository
     success_url = reverse_lazy('repository-list')
+
+def repository_update_applications_and_boards(request, pk):
+    repo = get_object_or_404(models.Repository, pk=pk)
+    repo.update_boards()
+    repo.update_applications()
+    return HttpResponseRedirect(reverse_lazy('repository-list'))
 
 # Create your views here.
