@@ -192,10 +192,10 @@ class Application(models.Model):
                             blank=True)
     repository = models.ManyToManyField('Repository', related_name='applications',
                                         through='ApplicationTree')
-    blacklisted_boards = models.ManyToManyField('Board',
-            related_name='blacklisted_applications')
-    whitelisted_boards = models.ManyToManyField('Board',
-            related_name='whitelisted_applications')
+    blacklisted_boards = models.ManyToManyField('Board', blank=True,
+        related_name='blacklisted_applications')
+    whitelisted_boards = models.ManyToManyField('Board', blank=True,
+        related_name='whitelisted_applications')
     no_application = models.BooleanField(default=False, blank=False, null=False,
                                          editable=False)
 
