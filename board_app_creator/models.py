@@ -106,6 +106,9 @@ class Repository(models.Model):
 
     objects = RepositoryManager()
 
+    class Meta:
+        ordering = ['-is_default', 'path']
+
     def __str__(self):
         return self.url
 
@@ -177,6 +180,9 @@ class Board(models.Model):
     def __str__(self):
         return self.riot_name
 
+    class Meta:
+        ordering = ['riot_name']
+
 class Application(models.Model):
     """
     A representarion of a RIOT application.
@@ -194,6 +200,9 @@ class Application(models.Model):
                                          editable=False)
 
     objects = ApplicationManager()
+
+    class Meta:
+        ordering = ['name']
 
 class ApplicationTree(models.Model):
     """
