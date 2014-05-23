@@ -1,13 +1,24 @@
 {% extends "board_app_creator/base.html" %}
 {% load bootstrap3 %}
 {% block content %}
-    <form action="#" method="post" class="form">
-        {% csrf_token %}
-        {% bootstrap_form form %}
-        {% buttons %}
-            <button type="submit" class="btn btn-primary">
-                {% block submit_text %}{% endblock %}
-            </button>
-        {% endbuttons %}
-    </form>
+    <div class="row">
+        <div class="col-md-12">
+            <ol class="breadcrumb">
+            {% block breadcrumb %}{% endblock %}
+            </ol>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <form action="#" method="post" class="form">
+                {% csrf_token %}
+                {% bootstrap_form form %}
+                {% buttons %}
+                    <button type="submit" class="btn btn-primary">
+                        {% block submit_text %}{% endblock %}
+                    </button>
+                {% endbuttons %}
+            </form>
+        </div>
+    </div>
 {% endblock %}
