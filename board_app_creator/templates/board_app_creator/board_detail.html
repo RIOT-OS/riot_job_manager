@@ -9,6 +9,7 @@
 {% endblock %}
 {% block header %}Board <small>{{ object.riot_name }}</small>{% endblock %}
 {% block actionbar %}
+    <a href="{% url "board-update" pk=object.pk %}" title="Edit">{% bootstrap_icon "pencil" %}</a>
     {% if object.no_board %}
         <a href="{% url "board-ignore" pk=object.pk %}" title="Handle as board">{% bootstrap_icon "eye-open" %}</a>
     {% else %}

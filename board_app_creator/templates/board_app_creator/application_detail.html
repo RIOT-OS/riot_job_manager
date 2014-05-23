@@ -9,6 +9,7 @@
 {% endblock %}
 {% block header %}Application <small>{{ object.name }}</small>{% endblock %}
 {% block actionbar %}
+        <a href="{% url "application-update" pk=object.pk %}" title="Edit">{% bootstrap_icon "pencil" %}</a>
         {% if object.no_application %}
             <a href="{% url "application-ignore" pk=object.pk %}" title="Handle as application">{% bootstrap_icon "eye-open" %}</a>
         {% else %}
