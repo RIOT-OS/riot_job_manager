@@ -16,6 +16,10 @@
 {% block detail %}
     <dt>Clone path</dt>
     <dd>{{ object.path }}</dd>
+    {% if object.weblink %}
+    <dt>Weblink</dt>
+    <dd><a href="{{ object.weblink }}" target="_blank">{{ object.weblink }}</a></dd>
+    {% endif %}
     <dt>Default branch</dt>
     <dd>{{ object.default_branch }}</dd>
     <dt>Boards tree</dt>

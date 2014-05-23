@@ -120,6 +120,25 @@ class Repository(models.Model):
             self._vcs = vcs.get_repository(self.path, self.vcs, self.url)
         return self._vcs
 
+    @property
+    def weblink(self):
+        """
+        Tries to parse weblink from URL or returns None
+        """
+        ssh_guess = re.match(r"(?P<username>[a-z_][a-z0-9_]+)@(?P<hostname>[^:]+):(?P<path>.+)", self.url)
+        if ssh_guess == None:
+            m = re.match(r"(?P<schema>[a-zA-Z,+-0-9]+)://(?P<hostname>[^/]+)/(?P<path>.+)", self.url)
+        else:
+            m = ssh_guess
+
+        if m.group('hostname') != "github.com":
+            return None
+
+        path = m.group('path')
+        path = re.sub(r'(.*)\.git/*', r'\1', path)
+
+        return "https://{}/{}".format(m.group('hostname'), path)
+
     def has_application_trees(self):
         return self.application_trees.exists()
 
