@@ -3,6 +3,7 @@ from os.path import isdir, exists, join as path_join
 
 from ._vcs import Repository, Commit, Tree, Blob
 import vcs.git as git
+from pygit2 import GitError as VCSError
 
 __REPO_IMPL = {
     'git': git.GitRepository,

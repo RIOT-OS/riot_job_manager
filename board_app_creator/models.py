@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 
+import board_app_creator.validators as validators
 import vcs
 import usb
 
@@ -87,7 +88,8 @@ class Repository(models.Model):
     A RIOT related repository
     """
     url = models.CharField(max_length=256, verbose_name="URL", unique=True,
-                           blank=False, null=False)
+                           blank=False, null=False,
+                           validators=[validators.validate_git_repository])
     path = models.CharField(max_length=256, unique=True)
     default_branch = models.CharField(max_length=32, blank=False, null=False,
                                       default='master')
