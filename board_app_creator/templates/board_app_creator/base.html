@@ -29,6 +29,11 @@
                   <li class="{% block nav-board-class %}{% endblock %}"><a href="{% block nav-board-link %}{% url "board-list" %}{% endblock %}">Boards</a></li>
                   <li class="{% block nav-application-class %}{% endblock %}"><a href="{% block nav-application-link %}{% url "application-list" %}{% endblock %}">Applications</a></li>
                 </ul>
+                {% if request.user.is_authenticated %}
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url "logout" %}">Log out {{ request.user.first_name }}</a>
+                </ul>
+                {% endif %}
               </div>
             </div>
         </nav>

@@ -46,6 +46,10 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+LOGIN_REDIRECT_URL = "/jobs"
+LOGIN_URL = "/jobs/social_auth/login/github-org/"
+LOGOUT_URL = "/jobs/logout"
+
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -60,6 +64,7 @@ ROOT_URLCONF = 'riot_job_manager.urls'
 WSGI_APPLICATION = 'riot_job_manager.wsgi.application'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.core.context_processors.request',
     'social.apps.django_app.context_processors.backends',
     'social.apps.django_app.context_processors.login_redirect',
 )
@@ -92,9 +97,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-SOCIAL_AUTH_GITHUB_ORG_KEY = ''
-SOCIAL_AUTH_GITHUB_ORG_SECRET = ''
+SOCIAL_AUTH_GITHUB_ORG_KEY = '05cadf9099144536e910'
+SOCIAL_AUTH_GITHUB_ORG_SECRET = '9b05256f76a3affeb7fbc252f6b2482fe1a9c416'
 SOCIAL_AUTH_GITHUB_ORG_NAME = 'RIOT-OS'
+SOCIAL_AUTH_GITHUB_ORG_SCOPE = ['read:org']
 
 JENKINS_JOBS_PATH = '/var/lib/jenkins/jobs'
 
