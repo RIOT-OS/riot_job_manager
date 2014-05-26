@@ -2,6 +2,7 @@
 Models for board_app_creator application.
 """
 import re
+from os import listdir
 from os.path import join as path_join, relpath
 
 from django.conf import settings
@@ -12,6 +13,7 @@ from django.db.models.signals import pre_save, post_save
 import board_app_creator.validators as validators
 import vcs
 import usb
+import jenkins.jobs
 
 class RepositoryManager(models.Manager):
     """
@@ -227,7 +229,7 @@ class Board(models.Model):
     usb_device= models.OneToOneField('USBDevice', related_name='board',
                                      blank=True, null=True,
                                      verbose_name="USB Device")
-    prototype_jobs = models.ManyToManyField('Job', related_name='+', blank=True)
+    prototype_jobs = models.ManyToManyField('Job', related_name='board_prototype_for', blank=True)
     no_board = models.BooleanField(default=False, blank=False, null=False,
                                    editable=False)
 
@@ -254,6 +256,7 @@ class Application(models.Model):
         related_name='whitelisted_applications')
     no_application = models.BooleanField(default=False, blank=False, null=False,
                                          editable=False)
+    prototype_jobs = models.ManyToManyField('Job', related_name='app_prototype_for', blank=True)
 
     objects = ApplicationManager()
 
@@ -287,6 +290,11 @@ class Application(models.Model):
                     app_name = re.sub(r".*PROJECT\s*=\s*([^\s]+).*", r'\1', line)
                 if re.match(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
                     blacklist.extend(re.sub(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
+                    if line.endswith('\\'):
+                        blacklist.pop(-1)
+                        next_line_blacklist = True
+                if re.match(r".*BOARD_INSUFFICIENT_RAM\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
+                    blacklist.extend(re.sub(r".*BOARD_INSUFFICIENT_RAM\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
                     if line.endswith('\\'):
                         blacklist.pop(-1)
                         next_line_blacklist = True
@@ -333,7 +341,10 @@ class Job(models.Model):
     namespace = models.IntegerField(choices=((0, 'RIOT'), (1, 'Thirdparty')),
                                     blank=False, null=False, default=0)
     name = models.CharField(max_length=64, unique=True, blank=False, null=False)
-    board = models.ForeignKey('Board', related_name='boards')
+    upstream_job = models.ForeignKey('Job', related_name='downstream_jobs',
+                                     null=True, blank=True, default=None)
+    manual = models.BooleanField(default=False)
+    always_update = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -344,6 +355,51 @@ class Job(models.Model):
         The path to the application.
         """
         return path_join(settings.JENKINS_JOBS_PATH, self.name)
+
+    @property
+    def xml(self):
+        """
+        XML representation of the application
+        """
+        if not hasattr(self, '_xml'):
+            try:
+                self._xml = jenkins.jobs.MultiJob(self.path)
+            except ValueError:
+                self._xml = jenkins.jobs.Job(self.path)
+
+        return self._xml
+
+    @staticmethod
+    def create_from_jenkins_xml():
+        for job in listdir(settings.JENKINS_JOBS_PATH):
+            if Job.objects.filter(name=job).exists():
+                continue
+            boards = Board.objects.all()
+            apps = Application.objects.all()
+            if any(board.riot_name in job for board in boards) or \
+               any(app.name in job for app in apps):
+                for board in [b for b in boards if b in job]:
+                    for app in [a for a in apps if a in job]:
+                        ApplicationJob.objects.create(name=job, board=board,
+                                                      application=app)
+            else:
+                Job.objects.create(name=job)
+
+
+class ApplicationJob(Job):
+    """
+    A representation of a Jenkins job for a RIOT application
+    """
+    board = models.ForeignKey('Board', related_name='jobs')
+    application = models.ForeignKey('application', related_name='jobs')
+
+    @property
+    def xml(self):
+        if not hasattr(self, '_xml') or isinstance(self._xml, jenkins.jobs.ApplicationJob):
+            self._xml = jenkins.jobs.ApplicationJob(self.path, self.board.name,
+                                                    self.application.name,
+                                                    self.application.path)
+        return super(ApplicationManager, self).xml
 
 def repository_pre_save(sender, instance, raw, using, update_fields, **kwargs):
     if instance.has_boards_tree:
