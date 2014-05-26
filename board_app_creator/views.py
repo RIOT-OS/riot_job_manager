@@ -26,9 +26,7 @@ class ApplicationList(ListView):
 class ApplicationCreate(CreateView):
     model = models.Application
     success_url = reverse_lazy('application-list')
-    form_class =  modelform_factory(models.Application,
-                    widgets={"blacklisted_boards": CheckboxSelectMultiple,
-                             "whitelisted_boards": CheckboxSelectMultiple})
+    form_class = forms.ApplicationForm
 
     def get_context_data(self, **kwargs):
         context = super(ApplicationCreate, self).get_context_data(**kwargs)
@@ -42,9 +40,7 @@ class ApplicationDelete(DeleteView):
 class ApplicationUpdate(UpdateView):
     model = models.Application
     success_url = reverse_lazy('application-list')
-    form_class =  modelform_factory(models.Application,
-                    widgets={"blacklisted_boards": CheckboxSelectMultiple,
-                             "whitelisted_boards": CheckboxSelectMultiple})
+    form_class = forms.ApplicationForm
 
     def get_context_data(self, **kwargs):
         context = super(ApplicationUpdate, self).get_context_data(**kwargs)
