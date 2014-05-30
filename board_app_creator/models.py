@@ -269,6 +269,9 @@ class Application(models.Model):
     class Meta:
         ordering = ['name']
 
+    def __str__(self):
+        return self.name
+
     @staticmethod
     def get_name_and_lists_from_makefile(repository, makefile_path):
         try:

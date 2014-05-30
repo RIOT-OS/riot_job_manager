@@ -18,6 +18,7 @@ class ApplicationForm(forms.ModelForm):
         model = models.Application
         widgets = {"blacklisted_boards": forms.CheckboxSelectMultiple,
                    "whitelisted_boards": forms.CheckboxSelectMultiple,
+                   "repository": forms.CheckboxSelectMultiple,
                    "prototype_jobs": forms.CheckboxSelectMultiple}
 
     def __init__(self, *args, **kwargs):
