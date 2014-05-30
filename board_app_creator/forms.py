@@ -4,7 +4,8 @@ from django import forms
 from board_app_creator import models
 
 class TreeSelectMultipleForm(forms.Form):
-    trees = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
+    trees = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,
+                                      required=False)
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
