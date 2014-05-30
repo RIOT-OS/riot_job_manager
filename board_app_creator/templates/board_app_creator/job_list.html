@@ -1,0 +1,97 @@
+{% extends 'board_app_creator/list.html' %}
+{% load bootstrap3 %}
+{% block title %}Jobs{% endblock %}
+{% block nav-job-class %}active{% endblock %}
+{% block nav-job-link %}#{% endblock %}
+{% block header %}
+    Jobs
+    <small>
+        <a class="btn btn-success" href="{% url "job-create" %}">
+            {% bootstrap_icon "plus" %} Add job
+        </a>&nbsp;
+        <a class="btn btn-default" title="Reload from disk" href="{% url "job-renew-all" %}">
+            {% bootstrap_icon "refresh" %}
+        </a>
+    </small>{% endblock %}
+{% block list-table-head %}
+    <th>Name</th>
+    <th>Namespace</th>
+    <th>Upstream job</th>
+    <th>Downstream jobs</th>
+    <th><abbr title="Manually configured">M</abbr></th>
+    <th><abbr title="Always update on re-scan">U</abbr></th>
+    <th>Board</th>
+    <th>Application</th>
+    <th></th>
+    <th></th>
+    <th></th>
+{% endblock %}
+{% block list-table-row %}
+    <tr>
+        <td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
+        <td>
+            {% if object.namespace %}
+                <a href="{% url "repository-detail" pk=object.namespace.repository.pk %}">
+                    {{ object.namespace }}
+            {% else %}
+                &mdash;
+            {% endif %}
+        </td>
+        <td>
+            {% if object.upstream_job %}
+                <a href="{{ object.upstream_job.get_absolute_url }}">
+                    {{ object.upstream_job }}
+                </a>
+            {% else %}
+                &mdash;
+            {% endif %}
+        </td>
+        <td>
+            {% for job in object.downstream_jobs.all|slice:"3" %}
+                <a href="{{ job.get_absolute_url }}">
+                    {{ job }}
+                </a>{% if not forloop.last %},
+                {% endif %}
+            {% empty %}
+                &mdash;
+            {% endfor %}
+            {% if object.downstream_jobs.count > 3 %}
+                , ...
+            {% endif %}
+        </td>
+        <td>
+            {% if object.manual %}
+                {% bootstrap_icon "check" %}
+            {% else %}
+                {% bootstrap_icon "unchecked" %}
+            {% endif %}
+        </td>
+        <td>
+            {% if object.always_update %}
+                {% bootstrap_icon "check" %}
+            {% else %}
+                {% bootstrap_icon "unchecked" %}
+            {% endif %}
+        </td>
+        <td>
+            {% if object.board %}
+                <a href="{{ object.board.get_absolute_url }}">{{ object.board }}</a>
+            {% else %}
+                <a href="{% url "job-update-board-app" pk=object.pk %}" class="text-success">{% bootstrap_icon "plus" %}</a>
+            {% endif %}
+        </td>
+        <td>
+            {% if object.application %}
+                <a href="{{ object.application.get_absolute_url }}">{{ object.application }}</a>
+            {% else %}
+                <a href="{% url "job-update-board-app" pk=object.pk %}" class="text-success">{% bootstrap_icon "plus" %}</a>
+            {% endif %}
+        </td>
+        <td><a href="{% url "job-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
+        <td><a href="{% url "job-renew" pk=object.pk %}" title="Reload job" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
+        <td><a href="{% url "job-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
+    </tr>
+{% endblock %}
+{% block list-table-empty %}
+    No jobs found. <a href="#">Add one</a>
+{% endblock %}

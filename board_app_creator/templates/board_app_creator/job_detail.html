@@ -1,0 +1,45 @@
+{% extends 'board_app_creator/detail.html' %}
+{% load bootstrap3 %}
+{% block title %}Job: {{ object.name }}{% endblock %}
+{% block nav-job-class %}active{% endblock %}
+{% block nav-job-link %}#{% endblock %}
+{% block breadcrumb %}
+    <li><a href="{% url "job-list" %}">Jobs</a></li>
+    <li active="active">{{ object.name }}</li>
+{% endblock %}
+{% block header %}Job <small>{{ object.name }}</small>{% endblock %}
+{% block actionbar %}
+        <a href="{% url "job-update" pk=object.pk %}" title="Edit">{% bootstrap_icon "pencil" %}</a>
+        <a href="{% url "job-renew" pk=object.pk %}" title="Reload job">{% bootstrap_icon "refresh" %}</a>
+        <a href="{% url "job-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a>
+{% endblock %}
+{% block detail %}
+    <dt>Namespace</dt>
+    <dd><a href="{% url "repository-detail" pk=object.namespace.repository.pk %}">{{ object.namespace }}</a></dd>
+    {% if object.xml.filename %}
+    <dt>Config file</dt>
+    <dd>{{ object.xml.filename }}</dd>
+    {% endif %}
+    {% if object.application %}
+    <dt>Application</dt>
+    <dd><a href="{{ object.application.get_absolute_url }}">{{ object.application }}</a></dd>
+    {% endif %}
+    {% if object.board %}
+    <dt>Board</dt>
+    <dd><a href="{{ object.board.get_absolute_url }}">{{ object.board }}</a></dd>
+    {% endif %}
+    <dt>Manual</dt>
+    <dd>{{ object.manual|yesno:"Yes,No" }}</dd>
+    <dt>Always update</dt>
+    <dd>{{ object.always_update|yesno:"Yes,No" }}</dd>
+    {% if object.upstream_job %}
+    <dt>Upstream job</dt>
+    <dd><a href="{{ object.upstream_job.get_absolute_url }}">{{ object.upstream_job }}</a></dd>
+    {% endif %}
+    {% if object.downstream_jobs.exists %}
+    <dt>Downstream jobs</dt>
+    {% for j in object.downstream_jobs.all %}
+    <dd><a href="{{ j.get_absolute_url }}">{{ j }}</a></dd>
+    {% endfor %}
+    {% endif %}
+{% endblock %}

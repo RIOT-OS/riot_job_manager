@@ -410,6 +410,9 @@ class Job(models.Model):
     def is_application_job(self):
         return isinstance(self, ApplicationJob)
 
+    def get_subclass(self):
+        return type(self).objects.get_subclass(pk=self.pk)
+
     @staticmethod
     def create_from_jenkins_xml():
         multijobs = []

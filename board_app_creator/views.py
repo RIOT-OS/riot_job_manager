@@ -62,6 +62,9 @@ def application_update_from_makefile(request, pk):
     app.update_from_makefile()
     return HttpResponseRedirect(reverse_lazy('application-list'))
 
+class ApplicationJobUpdate(UpdateView):
+    model = models.ApplicationJob
+
 class BoardDetail(DetailView):
     model = models.Board
 
@@ -122,6 +125,65 @@ def board_toggle_no_board(request, pk):
         return HttpResponseRedirect(reverse_lazy('board-list'))
     else:
         return HttpResponseRedirect(reverse_lazy('board-hidden'))
+
+class JobCreate(CreateView):
+    model = models.Job
+    success_url = reverse_lazy('job-list')
+    template_name = 'board_app_creator/job_form.html'
+
+    def get_object(self, queryset=None):
+        if queryset:
+            queryset = queryset.select_subclasses()
+        return super(JobCreate, self).get_object(queryset).get_subclass()
+
+    def get_context_data(self, **kwargs):
+        context = super(JobCreate, self).get_context_data(**kwargs)
+        context['form_verb'] = "Add"
+        return context
+
+class JobDelete(DeleteView):
+    model = models.Job
+    success_url = reverse_lazy('job-list')
+    template_name = 'board_app_creator/job_confirm_delete.html'
+
+    def get_object(self, queryset=None):
+        if queryset:
+            queryset = queryset.select_subclasses()
+        return super(JobDelete, self).get_object(queryset).get_subclass()
+
+class JobDetail(DetailView):
+    model = models.Job
+    template_name = 'board_app_creator/job_detail.html'
+
+    def get_object(self, queryset=None):
+        if queryset:
+            queryset = queryset.select_subclasses()
+        return super(JobDetail, self).get_object(queryset).get_subclass()
+
+class JobList(ListView):
+    model = models.Job
+
+class JobUpdate(UpdateView):
+    model = models.Job
+    success_url = reverse_lazy('job-list')
+    template_name = 'board_app_creator/job_form.html'
+
+    def get_object(self, queryset=None):
+        if queryset:
+            queryset = queryset.select_subclasses()
+        return super(JobUpdate, self).get_object(queryset).get_subclass()
+
+    def get_context_data(self, **kwargs):
+        context = super(JobUpdate, self).get_context_data(**kwargs)
+        context['form_verb'] = "Edit"
+        return context
+
+def job_update_all(request):
+    models.Job.create_from_jenkins_xml()
+    return HttpResponseRedirect(reverse_lazy('job-list'))
+
+def job_update(request, pk):
+    return HttpResponseRedirect(reverse_lazy('job-list'))
 
 class RepositoryAddApplicationTrees(View):
     form_class = forms.TreeSelectMultipleForm

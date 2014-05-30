@@ -24,7 +24,7 @@
               </div>
               <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav nav-tabs navbar-nav">
-                  <li class="{% block nav-job-class %}{% endblock %}"><a href="#">Jobs</a></li>
+                  <li class="{% block nav-job-class %}{% endblock %}"><a href="{% block nav-job-link %}{% url "job-list" %}{% endblock %}">Jobs</a></li>
                   <li class="{% block nav-repository-class %}{% endblock %}"><a href="{% block nav-repository-link %}{% url "repository-list" %}{% endblock %}">Repositories</a></li>
                   <li class="{% block nav-board-class %}{% endblock %}"><a href="{% block nav-board-link %}{% url "board-list" %}{% endblock %}">Boards</a></li>
                   <li class="{% block nav-application-class %}{% endblock %}"><a href="{% block nav-application-link %}{% url "application-list" %}{% endblock %}">Applications</a></li>
