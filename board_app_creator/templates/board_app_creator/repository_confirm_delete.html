@@ -12,7 +12,7 @@
             <button type="submit" class="btn btn-success">
                 {% block submit_text %}Yes{% endblock %}
             </button>
-            <a href="{% url "repository-list" %}" class="btn btn-danger">
+            <a href="{{ view.get_success_url }}" class="btn btn-danger">
                 No
             </a>
         {% endbuttons %}

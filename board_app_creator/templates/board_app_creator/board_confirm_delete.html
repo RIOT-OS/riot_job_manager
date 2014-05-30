@@ -12,7 +12,7 @@
             <button type="submit" class="btn btn-success">
                 Yes
             </button>
-            <a href="{% url "board-list" %}" class="btn btn-danger">
+            <a href="{{ view.get_success_url }}" class="btn btn-danger">
                 No
             </a>
         {% endbuttons %}
