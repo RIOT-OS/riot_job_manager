@@ -260,7 +260,9 @@ class Application(models.Model):
         related_name='whitelisted_applications')
     no_application = models.BooleanField(default=False, blank=False, null=False,
                                          editable=False)
-    prototype_jobs = models.ManyToManyField('Job', related_name='app_prototype_for', blank=True)
+    prototype_jobs = models.ManyToManyField('ApplicationJob', 
+                                            related_name='app_prototype_for', 
+                                            blank=True)
 
     objects = ApplicationManager()
 
@@ -269,47 +271,47 @@ class Application(models.Model):
 
     @staticmethod
     def get_name_and_lists_from_makefile(repository, makefile_path):
-            try:
-                makefile_blob = repository.vcs_repo.head.get_file(makefile_path)
-            except KeyError:
-                raise Application.DoesNotExist("Application's Makefile does not exist")
-            if not isinstance(makefile_blob, vcs.Blob):
-                raise Application.DoesNotExist("Application's Makefile is no file")
-            makefile_content = makefile_blob.read()
-            app_name = ''
-            blacklist = []
-            whitelist = []
-            next_line_blacklist = False
-            next_line_whitelist = False
-            for line in makefile_content.splitlines():
-                if next_line_blacklist:
-                    blacklist.extend(re.sub(r"\s*(.+)\s*\\?$", r'\1', line).split(' '))
-                    if not line.endswith('\\'):
-                        next_line_blacklist = False
-                if next_line_whitelist:
-                    whitelist.extend(re.sub(r"\s*(.+)\s*\\?$", r'\1', line).split(' '))
-                    if not line.endswith('\\'):
-                        next_line_whitelist = False
-                if re.match(r".*PROJECT\s*[:?]?=\s*([^\s]+).*", line):
-                    app_name = re.sub(r".*PROJECT\s*=\s*([^\s]+).*", r'\1', line)
-                if re.match(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
-                    blacklist.extend(re.sub(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
-                    if line.endswith('\\'):
-                        blacklist.pop(-1)
-                        next_line_blacklist = True
-                if re.match(r".*BOARD_INSUFFICIENT_RAM\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
-                    blacklist.extend(re.sub(r".*BOARD_INSUFFICIENT_RAM\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
-                    if line.endswith('\\'):
-                        blacklist.pop(-1)
-                        next_line_blacklist = True
-                if re.match(r".*BOARD_WHITELIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
-                    whitelist.extend(re.sub(r".*BOARD_WHITELIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
-                    if line.endswith('\\'):
-                        whitelist.pop(-1)
-                        next_line_whitelist = True
-            if app_name == '':
-                raise AssertionError("Application name not in Makefile.")
-            return app_name, blacklist, whitelist
+        try:
+            makefile_blob = repository.vcs_repo.head.get_file(makefile_path)
+        except KeyError:
+            raise Application.DoesNotExist("Application's Makefile does not exist")
+        if not isinstance(makefile_blob, vcs.Blob):
+            raise Application.DoesNotExist("Application's Makefile is no file")
+        makefile_content = makefile_blob.read()
+        app_name = ''
+        blacklist = []
+        whitelist = []
+        next_line_blacklist = False
+        next_line_whitelist = False
+        for line in makefile_content.splitlines():
+            if next_line_blacklist:
+                blacklist.extend(re.sub(r"\s*(.+)\s*\\?$", r'\1', line).split(' '))
+                if not line.endswith('\\'):
+                    next_line_blacklist = False
+            if next_line_whitelist:
+                whitelist.extend(re.sub(r"\s*(.+)\s*\\?$", r'\1', line).split(' '))
+                if not line.endswith('\\'):
+                    next_line_whitelist = False
+            if re.match(r".*APPLICATION\s*[:?]?=\s*([^\s]+).*", line):
+                app_name = re.sub(r".*APPLICATION\s*=\s*([^\s]+).*", r'\1', line)
+            if re.match(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
+                blacklist.extend(re.sub(r".*BOARD_BLACKLIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
+                if line.endswith('\\'):
+                    blacklist.pop(-1)
+                    next_line_blacklist = True
+            if re.match(r".*BOARD_INSUFFICIENT_RAM\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
+                blacklist.extend(re.sub(r".*BOARD_INSUFFICIENT_RAM\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
+                if line.endswith('\\'):
+                    blacklist.pop(-1)
+                    next_line_blacklist = True
+            if re.match(r".*BOARD_WHITELIST\s*[:?]?=\s*([^\\]+)\s*\\?$", line):
+                whitelist.extend(re.sub(r".*BOARD_WHITELIST\s*[:?]?=\s*([^\\]+)\s*\\?$", r'\1', line).split(' '))
+                if line.endswith('\\'):
+                    whitelist.pop(-1)
+                    next_line_whitelist = True
+        if app_name == '':
+            raise AssertionError("Application name not in Makefile.")
+        return app_name, blacklist, whitelist
 
     def update_from_makefile(self):
         if self.no_application:
