@@ -76,8 +76,7 @@ class BoardList(ListView):
 class BoardCreate(CreateView):
     model = models.Board
     success_url = reverse_lazy('board-list')
-    form_class =  modelform_factory(models.Board,
-                    widgets={"prototype_jobs": CheckboxSelectMultiple })
+    form_class = forms.BoardForm
 
     def get(self, *args, **kwargs):
         models.USBDevice.objects.update_from_system()
@@ -99,8 +98,7 @@ class BoardDelete(DeleteView):
 class BoardUpdate(UpdateView):
     model = models.Board
     success_url = reverse_lazy('board-list')
-    form_class =  modelform_factory(models.Board,
-                    widgets={"prototype_jobs": CheckboxSelectMultiple })
+    form_class = forms.BoardForm
 
     def get(self, *args, **kwargs):
         models.USBDevice.objects.update_from_system()
