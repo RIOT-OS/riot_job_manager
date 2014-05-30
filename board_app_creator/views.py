@@ -167,8 +167,9 @@ class RepositoryAddApplicationTrees(View):
                             appobj.blacklisted_boards.add(board)
                         if board.riot_name in whitelist and board not in appobj.blacklisted_boards.all():
                             appobj.whitelisted_boards.add(board)
+            models.Job.create_from_jenkins_xml()
             return HttpResponseRedirect(reverse_lazy('repository-list'))
-        return render(request, self.template_name, form)
+        return render(request, self.template_name, {'form': form})
 
 class RepositoryDetail(DetailView):
     model = models.Repository

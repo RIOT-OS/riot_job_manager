@@ -8,6 +8,7 @@
     <th>VCS</th>
     <th>URL</th>
     <th>Clone path</th>
+    <th>Job namespace</th>
     <th>Default branch</th>
     <th>Boards tree</th>
     <th>CPUs tree</th>
@@ -26,6 +27,7 @@
             {% endif %}
         </td>
         <td>{{ object.path }}</td>
+        <td>{{ object.job_namespace }}</td>
         <td>{{ object.default_branch }}</td>
         <td>{% if object.has_boards_tree %}{{ object.boards_tree }}{% else %}&mdash;{% endif %}</td>
         <td>{% if object.has_cpu_tree %}{{ object.cpu_tree }}{% else %}&mdash;{% endif %}</td>

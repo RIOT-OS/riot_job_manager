@@ -90,6 +90,10 @@ class MultiJob(Job):
                 raise KeyError(job_name)
         return super(MultiJob, self).__getitem__(job_name)
 
+    def __iter__(self):
+        for jobname in self.filetree.xpath('//jobName/text()'):
+            yield jobname
+
     def update_job_by_prototype(self, job, prototype_job):
         entry = self[prototype_job.name]
         try:

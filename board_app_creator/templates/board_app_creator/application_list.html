@@ -8,6 +8,7 @@
     <th>Name</th>
     <th>Repository</th>
     <th>Path</th>
+    <th>Prototype jobs</th>
     <th></th>
     <th>
         {% if hidden_shown %}
@@ -30,6 +31,7 @@
             {% endfor %}
         </td>
         <td>{{ object.path }}</td>
+        <td>{% if object.prototype_jobs %}{{ object.prototype_jobs.all|join:", "|default:"&mdash;"}}{% else %}&mdash;{% endif %}</td>
         <td><a href="{% url "application-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
         <td>
             {% if object.no_application %}

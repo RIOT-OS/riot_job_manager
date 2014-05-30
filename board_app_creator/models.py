@@ -10,6 +10,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import pre_save, post_save
 
+from model_utils.managers import InheritanceManager
+
 import board_app_creator.validators as validators
 import vcs
 import usb
@@ -229,7 +231,9 @@ class Board(models.Model):
     usb_device= models.OneToOneField('USBDevice', related_name='board',
                                      blank=True, null=True,
                                      verbose_name="USB Device")
-    prototype_jobs = models.ManyToManyField('Job', related_name='board_prototype_for', blank=True)
+    prototype_jobs = models.ManyToManyField('ApplicationJob',
+                                            related_name='board_prototype_for', 
+                                            blank=True)
     no_board = models.BooleanField(default=False, blank=False, null=False,
                                    editable=False)
 
@@ -334,17 +338,30 @@ class ApplicationTree(models.Model):
     def __str__(self):
         return self.tree_name
 
+class JobNamespace(models.Model):
+    name = models.CharField(max_length=64, unique=True)
+    repository = models.OneToOneField('Repository', related_name='job_namespace')
+
+    def __str__(self):
+        return self.name
+
 class Job(models.Model):
     """
     A representation of a Jenkins job.
     """
-    namespace = models.IntegerField(choices=((0, 'RIOT'), (1, 'Thirdparty')),
-                                    blank=False, null=False, default=0)
-    name = models.CharField(max_length=64, unique=True, blank=False, null=False)
+    namespace = models.ForeignKey('JobNamespace', blank=True, null=True,
+                                  default=0, related_name='jobs')
+    name = models.CharField(max_length=64, unique=True, blank=False, null=False,
+                            editable=False)
     upstream_job = models.ForeignKey('Job', related_name='downstream_jobs',
                                      null=True, blank=True, default=None)
     manual = models.BooleanField(default=False)
     always_update = models.BooleanField(default=False)
+
+    objects = InheritanceManager()
+
+    class Meta:
+        ordering = ['name']
 
     def __str__(self):
         return self.name
@@ -369,29 +386,55 @@ class Job(models.Model):
 
         return self._xml
 
+    def is_application_job(self):
+        return isinstance(self, ApplicationJob)
+
     @staticmethod
     def create_from_jenkins_xml():
+        multijobs = []
+
         for job in listdir(settings.JENKINS_JOBS_PATH):
             if Job.objects.filter(name=job).exists():
                 continue
             boards = Board.objects.all()
             apps = Application.objects.all()
+            obj, created = Job.objects.get_or_create(name=job)
+
+            if isinstance(obj.xml, jenkins.jobs.MultiJob):
+                multijobs.append(obj)
+                for jobname in obj.xml:
+                    if not obj.downstream_jobs.filter(name=jobname).exists():
+                        obj.downstream_jobs.add(*Job.objects.filter(name=jobname))
+
+            for multijob in multijobs:
+                if obj.name in multijob.xml:
+                    obj.upstream_job = multijob
+
+            if created:
+                try:
+                    obj.namespace = Repository.objects.get(is_default=True).job_namespace
+                except Repository.DoesNotExist:
+                    pass
+
             if any(board.riot_name in job for board in boards) or \
                any(app.name in job for app in apps):
-                for board in [b for b in boards if b in job]:
-                    for app in [a for a in apps if a in job]:
-                        ApplicationJob.objects.create(name=job, board=board,
-                                                      application=app)
-            else:
-                Job.objects.create(name=job)
+                for board in [b for b in boards if b.riot_name in job]:
+                    for app in [a for a in apps if a.name in job]:
+                        obj.__class__ = ApplicationJob
+                        obj.board = board
+                        obj.application = app
+                        obj.namespace = board.repo.job_namespace
 
+            obj.save()
 
 class ApplicationJob(Job):
     """
     A representation of a Jenkins job for a RIOT application
     """
-    board = models.ForeignKey('Board', related_name='jobs')
-    application = models.ForeignKey('application', related_name='jobs')
+    board = models.ForeignKey('Board', related_name='jobs', null=True,
+                              blank=True)
+    application = models.ForeignKey('application', related_name='jobs',
+                                    null=True, blank=True)
 
     @property
     def xml(self):
@@ -418,6 +461,16 @@ def repository_post_save(sender, instance, created, raw, using, update_fields,
         tree = tree if tree == '.' else tree[2:]
         if created and instance.has_boards_tree and tree == instance.boards_tree:
             instance.update_boards()
+
+    if created:
+        namespace_name = re.sub(r'^.*/([^/]+(.git)?)$', r'\1', instance.url).replace('_', '-').replace('.git', '')
+        input_name = namespace_name[0].upper() + namespace_name[1:]
+        c = 1
+        while JobNamespace.objects.filter(name=input_name).exists():
+            input_name = namespace_name + str(c)
+            c += 1
+
+        JobNamespace.objects.create(name=input_name, repository=instance)
 
 pre_save.connect(repository_pre_save, sender=Repository)
 post_save.connect(repository_post_save, sender=Repository)

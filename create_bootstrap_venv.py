@@ -13,6 +13,7 @@ def after_install(option, home_dir):
                      'install',
                      'django',
                      'django-bootstrap3',
+                     'django-model-utils',
                      'lxml',
                      'pygit2',
                      'python-social-auth'])
