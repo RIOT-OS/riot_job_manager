@@ -177,7 +177,9 @@ class RepositoryList(ListView):
 
 class RepositoryCreate(CreateView):
     model = models.Repository
-    success_url = reverse_lazy('repository-list')
+
+    def get_success_url(self):
+        return reverse_lazy('repository-add-application-trees', kwargs={'pk': self.object.pk})
 
     def get_context_data(self, **kwargs):
         context = super(RepositoryCreate, self).get_context_data(**kwargs)
