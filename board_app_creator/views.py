@@ -12,6 +12,14 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from board_app_creator import forms, models
 import vcs
 
+def index(request):
+    if not models.Repository.objects.exists():
+        return HttpResponseRedirect(reverse_lazy('repository-create'))
+    elif not models.Job.objects.exists():
+        return HttpResponseRedirect(reverse_lazy('job-create'))
+    else:
+        return HttpResponseRedirect(reverse_lazy('job-list'))
+
 class ApplicationDetail(DetailView):
     model = models.Application
 

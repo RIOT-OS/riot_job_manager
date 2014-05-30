@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from board_app_creator import models, views
 
 urlpatterns = [
+    url(r'^/*$', views.index, name='index'),
     url(r'^social_auth/', include('social.apps.django_app.urls', namespace='social')),
     url(r'^logout/', 'django.contrib.auth.views.logout', {'template_name': 'board_app_creator/logout.html'}, name='logout'),
     url(r'^application/?$', views.ApplicationList.as_view(queryset=models.Application.objects.all_real()), name='application-list'),
