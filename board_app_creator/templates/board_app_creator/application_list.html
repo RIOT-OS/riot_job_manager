@@ -22,10 +22,10 @@
 {% endblock %}
 {% block list-table-row %}
     <tr class="{% if object.no_application %}danger{% endif %}">
-        <td><a href="{% url "application-detail" pk=object.pk %}">{{ object.name }}</a></td>
+        <td><a href="{{ object.get_absolute_url }}">{{ object.name }}</a></td>
         <td>
             {% for repo in object.repository.all %}
-                <a href="{% url "repository-detail" pk=repo.pk %}">{{ repo }}</a>{% if not forloop.last %},{% endif %}
+                <a href="{{ object.get_absolute_url }}">{{ repo }}</a>{% if not forloop.last %},{% endif %}
             {% empty %}
                 &mdash;
             {% endfor %}

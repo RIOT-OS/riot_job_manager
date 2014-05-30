@@ -117,6 +117,10 @@ class Repository(models.Model):
     def __str__(self):
         return self.url
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('repository-detail', (self.pk,))
+
     @property
     def vcs_repo(self):
         """
@@ -239,11 +243,15 @@ class Board(models.Model):
 
     objects = BoardManager()
 
+    class Meta:
+        ordering = ['riot_name']
+
     def __str__(self):
         return self.riot_name
 
-    class Meta:
-        ordering = ['riot_name']
+    @models.permalink
+    def get_absolute_url(self):
+        return ('board-detail', (self.pk,))
 
 class Application(models.Model):
     """
@@ -271,6 +279,10 @@ class Application(models.Model):
 
     def __str__(self):
         return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('application-detail', (self.pk,))
 
     @staticmethod
     def get_name_and_lists_from_makefile(repository, makefile_path):
@@ -370,6 +382,10 @@ class Job(models.Model):
 
     def __str__(self):
         return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('job-detail', (self.pk,))
 
     @property
     def path(self):

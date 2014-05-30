@@ -21,7 +21,7 @@
     <tr class="{% if object.is_default %}info{% endif %}">
         <td>{{ object.get_vcs_display }}</td>
         <td>
-            <a href="{% url "repository-detail" pk=object.pk %}">{{ object.url }}</a>
+            <a href="{{ object.get_absolute_url }}">{{ object.url }}</a>
             {% if object.weblink %}
             &nbsp;<a href="{{ object.weblink }}" target="_blank">{% bootstrap_icon "link" %}</a>
             {% endif %}

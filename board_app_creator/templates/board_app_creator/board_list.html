@@ -22,9 +22,9 @@
 {% endblock %}
 {% block list-table-row %}
     <tr class="{% if object.no_board %}danger{% endif %}">
-        <td><a href="{% url "board-detail" pk=object.pk %}">{{ object.riot_name }}</a></td>
-        <td><a href="{% url "repository-detail" pk=object.repo.pk %}">{{ object.repo }}</a></td>
-        <td><a href="{% url "repository-detail" pk=object.cpu_repo.pk %}">{% if object.cpu_repo %}{{ object.cpu_repo }}{% else %}&mdash;{% endif %}</a></td>
+        <td><a href="{{ object.get_absolute_url }}">{{ object.riot_name }}</a></td>
+        <td><a href="{{ object.repo.get_absolute_url }}">{{ object.repo }}</a></td>
+        <td><a href="{{ object.cpu_repo.get_absolute_url }}">{% if object.cpu_repo %}{{ object.cpu_repo }}{% else %}&mdash;{% endif %}</a></td>
         <td>{% if object.usb_device %}{{ object.usb_device }}{% else %}&mdash;{% endif %}</td>
         <td>{% if object.prototype_jobs %}{{ object.prototype_jobs.all|join:", "|default:"&mdash;"}}{% else %}&mdash;{% endif %}</td>
         <td><a href="{% url "board-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
