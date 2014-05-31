@@ -1,5 +1,6 @@
 from os.path import dirname
 from django import forms
+from django.core.exceptions import ValidationError
 from django.conf import settings
 
 from board_app_creator import models
@@ -55,3 +56,18 @@ class BoardForm(forms.ModelForm):
             filter(board__riot_name__in=settings.RIOT_DEFAULT_BOARDS + [
                 board.riot_name if board else None]
             ).values_list('pk', 'name')
+
+class RepositoryForm(forms.ModelForm):
+    class Meta:
+        model = models.Repository
+
+    def clean_is_default(self):
+        is_default = self.cleaned_data.get('is_default')
+        if is_default:
+            qs = models.Repository.objects.filter(is_default=True)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise ValidationError(
+                    "A default repository already exists ({}).".format(qs.first()))
+        return is_default

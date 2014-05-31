@@ -117,6 +117,15 @@ class Repository(models.Model):
     def __str__(self):
         return self.url
 
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            qs = Repository.objects.filter(is_default=True)
+            if self.pk != None:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                self.is_default = True
+        super(Repository, self).save(*args, **kwargs)
+
     @models.permalink
     def get_absolute_url(self):
         return ('repository-detail', (self.pk,))

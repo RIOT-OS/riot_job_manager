@@ -257,6 +257,7 @@ class RepositoryList(ListView):
 
 class RepositoryCreate(CreateView):
     model = models.Repository
+    form_class = forms.RepositoryForm
 
     def get_success_url(self):
         return reverse_lazy('repository-add-application-trees', kwargs={'pk': self.object.pk})
@@ -272,6 +273,7 @@ class RepositoryDelete(DeleteView):
 
 class RepositoryUpdate(UpdateView):
     model = models.Repository
+    form_class = forms.RepositoryForm
     success_url = reverse_lazy('repository-list')
 
     def get_context_data(self, **kwargs):
