@@ -464,7 +464,16 @@ class Job(models.Model):
                     pass
 
             obj.update_from_jenkins_xml()
+
             obj.save()
+
+            if created and obj.is_application_job():
+                if (obj.application.name in settings.RIOT_DEFAULT_APPLICATIONS):
+                    obj.app_prototype_for.add(*Application.objects.exclude(name=obj.application.name))
+                if (obj.board.riot_name in settings.RIOT_DEFAULT_BOARDS):
+                    obj.board_prototype_for.add(*Board.objects.exclude(riot_name=obj.board.riot_name))
+                obj.save()
+
 
     @staticmethod
     def get_multijobs():
