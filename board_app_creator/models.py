@@ -371,7 +371,8 @@ class Job(models.Model):
     name = models.CharField(max_length=64, unique=True, blank=False, null=False,
                             editable=False)
     upstream_job = models.ForeignKey('Job', related_name='downstream_jobs',
-                                     null=True, blank=True, default=None)
+                                     null=True, blank=True, default=None,
+                                     on_delete=models.SET_NULL)
     manual = models.BooleanField(default=False)
     always_update = models.BooleanField(default=False)
 
