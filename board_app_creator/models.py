@@ -412,7 +412,10 @@ class Job(models.Model):
         return isinstance(self, ApplicationJob)
 
     def get_subclass(self):
-        return type(self).objects.get_subclass(pk=self.pk)
+        try:
+            return self._default_manager.get_subclass(pk=self.pk)
+        except ValueError:
+            return self._default_manager.get(pk=self.pk)
 
     @staticmethod
     def create_from_jenkins_xml():
@@ -469,6 +472,20 @@ class ApplicationJob(Job):
                                                     self.application.path)
         return super(ApplicationManager, self).xml
 
+
+class ApplicationJobDeletionProxy(models.Model):
+    """
+    A representation of a Jenkins job for removal of RIOT application property
+    """
+    job_ptr_id = models.PositiveIntegerField(primary_key=True)
+    board_id = models.PositiveIntegerField()
+    application_id = models.PositiveIntegerField()
+
+    class Meta:
+        app_label = ApplicationJob._meta.app_label
+        db_table = ApplicationJob._meta.db_table
+        managed = False
+
 def repository_pre_save(sender, instance, raw, using, update_fields, **kwargs):
     if instance.has_boards_tree:
         error = ValidationError("{} is no tree in the repository.".format(
@@ -497,5 +514,10 @@ def repository_post_save(sender, instance, created, raw, using, update_fields,
 
         JobNamespace.objects.create(name=input_name, repository=instance)
 
+def application_job_post_save(sender, instance, created, *args, **kwargs):
+    if instance.board == None and instance.application == None:
+        ApplicationJobDeletionProxy.objects.filter(pk=instance.pk).delete()
+
 pre_save.connect(repository_pre_save, sender=Repository)
 post_save.connect(repository_post_save, sender=Repository)
+post_save.connect(application_job_post_save, sender=ApplicationJob)

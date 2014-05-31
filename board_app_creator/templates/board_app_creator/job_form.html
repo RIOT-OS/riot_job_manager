@@ -8,4 +8,11 @@
     <li active="active">{{ form_verb }} {% if object %}{{ object }}{% else %}Job{% endif %}</li>
 {% endblock %}
 {% block header %}{{ form_verb }} Job{% if object %} <small>{{ object }}</small>{% endif %}{% endblock %}
+{% block extra_text %}
+    {% if not object.is_application_job and "board" not in form.fields and "application" not in form.fields %}
+    <a href="{% if object %}{% url "application-job-update" pk=object.pk %}{% else %}{% url "application-job-create" %}{% endif %}">
+        Add board and application
+    </a>
+    {% endif %}
+{% endblock %}
 {% block submit_text %}{% if form_verb == "Add" %}{% bootstrap_icon "plus" %}{% else %}{% bootstrap_icon "pencil" %}{% endif %} {{ form_verb }}{% endblock %}

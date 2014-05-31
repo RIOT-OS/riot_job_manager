@@ -77,17 +77,17 @@
             {% if object.board %}
                 <a href="{{ object.board.get_absolute_url }}">{{ object.board }}</a>
             {% else %}
-                <a href="{% url "job-update-board-app" pk=object.pk %}" class="text-success">{% bootstrap_icon "plus" %}</a>
+                <a href="{% url "application-job-update" pk=object.pk %}" class="text-success">{% bootstrap_icon "plus" %}</a>
             {% endif %}
         </td>
         <td>
             {% if object.application %}
                 <a href="{{ object.application.get_absolute_url }}">{{ object.application }}</a>
             {% else %}
-                <a href="{% url "job-update-board-app" pk=object.pk %}" class="text-success">{% bootstrap_icon "plus" %}</a>
+                <a href="{% url "application-job-update" pk=object.pk %}" class="text-success">{% bootstrap_icon "plus" %}</a>
             {% endif %}
         </td>
-        <td><a href="{% url "job-update" pk=object.pk %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
+        <td><a href="{% if object.is_application_job %}{% url "application-job-update" pk=object.pk %}{% else %}{% url "job-update" pk=object.pk %}{% endif %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
         <td><a href="{% url "job-renew" pk=object.pk %}" title="Reload job" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
         <td><a href="{% url "job-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
     </tr>

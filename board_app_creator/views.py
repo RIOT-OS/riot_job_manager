@@ -4,7 +4,7 @@ from os.path import join as path_join
 from django.core.urlresolvers import reverse_lazy
 from django.forms import CheckboxSelectMultiple
 from django.forms.models import modelform_factory
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import View, DetailView, ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -69,9 +69,6 @@ def application_update_from_makefile(request, pk):
     app = get_object_or_404(models.Application, pk=pk)
     app.update_from_makefile()
     return HttpResponseRedirect(reverse_lazy('application-list'))
-
-class ApplicationJobUpdate(UpdateView):
-    model = models.ApplicationJob
 
 class BoardDetail(DetailView):
     model = models.Board
@@ -139,11 +136,6 @@ class JobCreate(CreateView):
     success_url = reverse_lazy('job-list')
     template_name = 'board_app_creator/job_form.html'
 
-    def get_object(self, queryset=None):
-        if queryset:
-            queryset = queryset.select_subclasses()
-        return super(JobCreate, self).get_object(queryset).get_subclass()
-
     def get_context_data(self, **kwargs):
         context = super(JobCreate, self).get_context_data(**kwargs)
         context['form_verb'] = "Add"
@@ -154,18 +146,11 @@ class JobDelete(DeleteView):
     success_url = reverse_lazy('job-list')
     template_name = 'board_app_creator/job_confirm_delete.html'
 
-    def get_object(self, queryset=None):
-        if queryset:
-            queryset = queryset.select_subclasses()
-        return super(JobDelete, self).get_object(queryset).get_subclass()
-
 class JobDetail(DetailView):
     model = models.Job
     template_name = 'board_app_creator/job_detail.html'
 
     def get_object(self, queryset=None):
-        if queryset:
-            queryset = queryset.select_subclasses()
         return super(JobDetail, self).get_object(queryset).get_subclass()
 
 class JobList(ListView):
@@ -176,15 +161,40 @@ class JobUpdate(UpdateView):
     success_url = reverse_lazy('job-list')
     template_name = 'board_app_creator/job_form.html'
 
-    def get_object(self, queryset=None):
-        if queryset:
-            queryset = queryset.select_subclasses()
-        return super(JobUpdate, self).get_object(queryset).get_subclass()
-
     def get_context_data(self, **kwargs):
         context = super(JobUpdate, self).get_context_data(**kwargs)
         context['form_verb'] = "Edit"
         return context
+
+class ApplicationJobCreate(JobCreate):
+    model = models.ApplicationJob
+
+class ApplicationJobUpdate(JobUpdate):
+    model = models.ApplicationJob
+
+    def __init__(self, *args, **kwargs):
+        super(ApplicationJobUpdate, self).__init__(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        if not hasattr(self.object, 'job_ptr_id'):
+            self.object.job_ptr_id = self.object.id
+            self.object.id = None
+        if not hasattr(self.object, 'board_id'):
+            self.object.board_id = None
+        if not hasattr(self.object, 'application_id'):
+            self.object.application_id = None
+        kwargs = super(ApplicationJobUpdate, self).get_form_kwargs()
+        return kwargs
+
+    def get_object(self, queryset=None):
+        try:
+            obj = super(ApplicationJobUpdate, self).get_object(queryset)
+        except Http404:
+            self.model = models.Job
+            obj = super(ApplicationJobUpdate, self).get_object(queryset)
+            self.model = models.ApplicationJob
+            obj.__class__ = models.ApplicationJob
+        return obj
 
 def job_update_all(request):
     models.Job.create_from_jenkins_xml()

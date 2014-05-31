@@ -9,7 +9,7 @@
 {% endblock %}
 {% block header %}Job <small>{{ object.name }}</small>{% endblock %}
 {% block actionbar %}
-        <a href="{% url "job-update" pk=object.pk %}" title="Edit">{% bootstrap_icon "pencil" %}</a>
+        <a href="{% if object.is_application_job %}{% url "application-job-update" pk=object.pk %}{% else %}{% url "job-update" pk=object.pk %}{% endif %}" title="Edit">{% bootstrap_icon "pencil" %}</a>
         <a href="{% url "job-renew" pk=object.pk %}" title="Reload job">{% bootstrap_icon "refresh" %}</a>
         <a href="{% url "job-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a>
 {% endblock %}
