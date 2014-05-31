@@ -8,9 +8,6 @@
     <small>
         <a class="btn btn-success" href="{% url "job-create" %}">
             {% bootstrap_icon "plus" %} Add job
-        </a>&nbsp;
-        <a class="btn btn-default" title="Reload from disk" href="{% url "job-renew-all" %}">
-            {% bootstrap_icon "refresh" %}
         </a>
     </small>{% endblock %}
 {% block list-table-head %}
@@ -23,7 +20,11 @@
     <th>Board</th>
     <th>Application</th>
     <th></th>
-    <th></th>
+    <th>
+        <a class="text-muted" title="Reload all jobs from disk" href="{% url "job-renew-all" %}">
+            {% bootstrap_icon "refresh" %}
+        </a>
+    </th>
     <th></th>
 {% endblock %}
 {% block list-table-row %}
@@ -88,7 +89,7 @@
             {% endif %}
         </td>
         <td><a href="{% if object.is_application_job %}{% url "application-job-update" pk=object.pk %}{% else %}{% url "job-update" pk=object.pk %}{% endif %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
-        <td><a href="{% url "job-renew" pk=object.pk %}" title="Reload job" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
+        <td><a href="{% url "job-renew" pk=object.pk %}" title="Reload job from disk" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
         <td><a href="{% url "job-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
     </tr>
 {% endblock %}

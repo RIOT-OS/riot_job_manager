@@ -201,6 +201,9 @@ def job_update_all(request):
     return HttpResponseRedirect(reverse_lazy('job-list'))
 
 def job_update(request, pk):
+    job = get_object_or_404(models.Job, pk=pk).get_subclass()
+    job.update_from_jenkins_xml()
+    job.save()
     return HttpResponseRedirect(reverse_lazy('job-list'))
 
 class RepositoryAddApplicationTrees(View):

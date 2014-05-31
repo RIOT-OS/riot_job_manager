@@ -426,26 +426,34 @@ class Job(models.Model):
         except ValueError:
             return self._default_manager.get(pk=self.pk)
 
+    def update_from_jenkins_xml(self):
+        if isinstance(self.xml, jenkins.jobs.MultiJob):
+            for jobname in self.xml:
+                if not self.downstream_jobs.filter(name=jobname).exists():
+                    self.downstream_jobs.add(*Job.objects.filter(name=jobname))
+
+        for multijob in Job.get_multijobs():
+            if self.name in multijob.xml:
+                self.upstream_job = multijob
+
+        boards = Board.objects.all()
+        apps = Application.objects.all()
+
+        if any(board.riot_name in self.name for board in boards) or \
+           any(app.name in self.name for app in apps):
+            for board in [b for b in boards if b.riot_name in self.name]:
+                for app in [a for a in apps if a.name in self.name]:
+                    self.__class__ = ApplicationJob
+                    self.board = board
+                    self.application = app
+                    self.namespace = board.repo.job_namespace
+
     @staticmethod
     def create_from_jenkins_xml():
-        multijobs = []
-
         for job in listdir(settings.JENKINS_JOBS_PATH):
             if Job.objects.filter(name=job).exists():
                 continue
-            boards = Board.objects.all()
-            apps = Application.objects.all()
             obj, created = Job.objects.get_or_create(name=job)
-
-            if isinstance(obj.xml, jenkins.jobs.MultiJob):
-                multijobs.append(obj)
-                for jobname in obj.xml:
-                    if not obj.downstream_jobs.filter(name=jobname).exists():
-                        obj.downstream_jobs.add(*Job.objects.filter(name=jobname))
-
-            for multijob in multijobs:
-                if obj.name in multijob.xml:
-                    obj.upstream_job = multijob
 
             if created:
                 try:
@@ -453,16 +461,12 @@ class Job(models.Model):
                 except Repository.DoesNotExist:
                     pass
 
-            if any(board.riot_name in job for board in boards) or \
-               any(app.name in job for app in apps):
-                for board in [b for b in boards if b.riot_name in job]:
-                    for app in [a for a in apps if a.name in job]:
-                        obj.__class__ = ApplicationJob
-                        obj.board = board
-                        obj.application = app
-                        obj.namespace = board.repo.job_namespace
-
+            obj.update_from_jenkins_xml()
             obj.save()
+
+    @staticmethod
+    def get_multijobs():
+        return [j for j in Job.objects.all() if isinstance(j, jenkins.jobs.MultiJob)]
 
 class ApplicationJob(Job):
     """
