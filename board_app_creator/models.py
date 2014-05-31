@@ -528,7 +528,7 @@ def repository_post_save(sender, instance, created, raw, using, update_fields,
         if created and instance.has_boards_tree and tree == instance.boards_tree:
             instance.update_boards()
 
-    if created:
+    if created and (instance.has_boards_tree or instance.has_application_trees):
         namespace_name = re.sub(r'^.*/([^/]+(.git)?)$', r'\1', instance.url).replace('_', '-').replace('.git', '')
         input_name = namespace_name[0].upper() + namespace_name[1:]
         c = 1
