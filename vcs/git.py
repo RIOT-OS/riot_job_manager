@@ -97,14 +97,17 @@ class GitCommit(Commit):
     def get_file(self, path_name):
         if path_name in ['', '.']:
             return self.base_tree
-        entry = self._commit.tree[path_name]
+        try:
+            entry = self._commit.tree[path_name]
+        except KeyError:
+            raise ValueError("{} does not exist in commit {}".format(path_name, self))
         obj = self._repo.get(entry.oid)
         if obj.type == pygit2.GIT_OBJ_TREE:
             return GitTree(self._repo, obj, entry.name)
         if obj.type == pygit2.GIT_OBJ_BLOB:
             return GitBlob(self._repo, obj, entry.name)
         else:
-            return ValueError("Unexpected object in Tree")
+            raise ValueError("Unexpected object in Tree")
 
     @property
     def base_tree(self):
@@ -120,14 +123,17 @@ class GitTree(Tree):
     def get_file(self, path_name):
         if path_name in ['', '.']:
             return self
-        entry = self._tree[path_name]
+        try:
+            entry = self._tree[path_name]
+        except KeyError:
+            raise ValueError("{} does not exist in commit {}".format(path_name, self))
         obj = self._repo.get(entry.oid)
         if obj.type == pygit2.GIT_OBJ_TREE:
             return GitTree(self._repo, obj, entry.name)
         if obj.type == pygit2.GIT_OBJ_BLOB:
             return GitBlob(self._repo, obj, entry.name)
         else:
-            return ValueError("Unexpected object in Tree")
+            raise ValueError("Unexpected object in Tree")
 
     @property
     def files(self):
