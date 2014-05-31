@@ -15,7 +15,7 @@ class TreeSelectMultipleForm(forms.Form):
         self.fields['trees'].choices = choices
 
 class ApplicationForm(forms.ModelForm):
-    class Meta():
+    class Meta:
         model = models.Application
         widgets = {"blacklisted_boards": forms.CheckboxSelectMultiple,
                    "whitelisted_boards": forms.CheckboxSelectMultiple,
@@ -45,7 +45,7 @@ class ApplicationForm(forms.ModelForm):
         return app
 
 class BoardForm(forms.ModelForm):
-    class Meta():
+    class Meta:
         model = models.Board
         widgets = {"prototype_jobs": forms.CheckboxSelectMultiple}
 
