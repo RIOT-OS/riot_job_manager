@@ -17,6 +17,9 @@ def after_install(option, home_dir):
                      'lxml',
                      'pygit2',
                      'python-social-auth'])
+    subprocess.call([os.path.join(home_dir, 'bin', 'python'),
+                     os.path.join(home_dir, '..', 'manage.py'),
+                     'syncdb'])
 """))
 f = open('bootstrap_venv.py', 'w').write(output)
 os.chmod('bootstrap_venv.py', 0775)

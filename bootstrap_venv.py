@@ -1850,9 +1850,13 @@ def after_install(option, home_dir):
                      'install',
                      'django',
                      'django-bootstrap3',
+                     'django-model-utils',
                      'lxml',
                      'pygit2',
                      'python-social-auth'])
+    subprocess.call([os.path.join(home_dir, 'bin', 'python'),
+                     os.path.join(home_dir, '..', 'manage.py'),
+                     'syncdb'])
 
 
 def convert(s):
