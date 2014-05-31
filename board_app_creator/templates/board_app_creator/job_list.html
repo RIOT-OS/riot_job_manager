@@ -8,6 +8,9 @@
     <small>
         <a class="btn btn-success" href="{% url "job-create" %}">
             {% bootstrap_icon "plus" %} Add job
+        </a>&nbsp;
+        <a class="btn btn-default" title="Create from repo data and prototypes" href="{{ create_url }}">
+            {% bootstrap_icon "save" %}
         </a>
     </small>{% endblock %}
 {% block list-table-head %}

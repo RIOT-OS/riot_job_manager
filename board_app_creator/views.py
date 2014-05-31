@@ -1,5 +1,6 @@
 import re
 from os.path import join as path_join
+from urllib import urlencode
 
 from django.core.urlresolvers import reverse_lazy
 from django.forms import CheckboxSelectMultiple
@@ -131,6 +132,28 @@ def board_toggle_no_board(request, pk):
     else:
         return HttpResponseRedirect(reverse_lazy('board-hidden'))
 
+def _get_next_application_job_params(prev_app_name, prev_board_name):
+    next_applications = models.Application.objects.filter(name__gt=prev_app_name)
+    next_boards = models.Board.objects.filter(riot_name__gt=prev_board_name)
+
+    while next_applications.exists() and \
+        not models.ApplicationJob.objects.exclude(board__riot_name=prev_board_name,
+                                                  application=next_applications.first(),
+                                                  always_update=True):
+        next_applications = models.Application.objects.filter(name__gt=next_applications.first().name)
+
+    if next_applications.exists():
+        return next_applications.first().name, prev_board_name
+    while next_boards.exists() and \
+        not models.ApplicationJob.objects.exclude(board=next_boards.first(),
+                                                  application__name=prev_app_name,
+                                                  always_update=True):
+        next_boards = models.Board.objects.filter(riot_name__gt=next_boards.first().name)
+
+    if next_boards.exists():
+        return prev_app_name, next_boards.first().riot_name
+    return None, None
+
 class JobCreate(CreateView):
     model = models.Job
     success_url = reverse_lazy('job-list')
@@ -155,6 +178,27 @@ class JobDetail(DetailView):
 
 class JobList(ListView):
     model = models.Job
+
+    def get_context_data(self, **kwargs):
+        context = super(JobList, self).get_context_data(**kwargs)
+        board = models.Board.objects.first()
+        application = models.Application.objects.first()
+        
+        next_application, next_board = _get_next_application_job_params(
+            application.name, board.riot_name)
+
+        if next_application and next_board:
+            params = '?'+urlencode({'next_application': next_application,
+                                    'next_board': next_board})
+        else:
+            params = ''
+
+        context['create_url'] = reverse_lazy('job-update-from-board-app',
+                                        kwargs={
+                                            'board': board,
+                                            'application': application
+                                        })+params
+        return context
 
 class JobUpdate(UpdateView):
     model = models.Job
@@ -205,6 +249,33 @@ def job_update(request, pk):
     job.update_from_jenkins_xml()
     job.save()
     return HttpResponseRedirect(reverse_lazy('job-list'))
+
+def job_update_from_board_app(request, board, application):
+    if 'next_application' in request.REQUEST:
+        next_application = request.REQUEST['next_application']
+    else:
+        next_application = application
+
+    if 'next_board' in request.REQUEST:
+        next_board = request.REQUEST['next_board']
+    else:
+        next_board = board
+
+    if next_application == application and next_board == board:
+        return HttpResponseRedirect(reverse_lazy('job-list'))
+    else:
+        next_next_application, next_next_board = _get_next_application_job_params(
+            next_application, next_board)
+
+        if next_next_application and next_next_board:
+            params = '?'+urlencode({'next_application': next_next_application,
+                                    'next_board': next_next_board})
+        else:
+            params = ''
+
+        return HttpResponseRedirect(reverse_lazy('job-update-from-board-app',
+            kwargs={'application': next_application,
+                    'board': next_board})+params)
 
 class RepositoryAddApplicationTrees(View):
     form_class = forms.TreeSelectMultipleForm

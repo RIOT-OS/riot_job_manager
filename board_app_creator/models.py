@@ -233,7 +233,8 @@ class Board(models.Model):
     A board in one of the RIOT repositories.
     """
     riot_name = models.CharField(max_length=16, unique=True, blank=False,
-                                 null=False, verbose_name="RIOT name")
+                                 null=False, db_index=True,
+                                 verbose_name="RIOT name")
     repo = models.ForeignKey('Repository', related_name='boards',
                              limit_choices_to={'has_boards_tree': True},
                              verbose_name='repository', blank=True, null=True)
@@ -266,7 +267,8 @@ class Application(models.Model):
     """
     A representarion of a RIOT application.
     """
-    name = models.CharField(max_length=16, blank=False, null=False)
+    name = models.CharField(max_length=16, blank=False, null=False,
+                            db_index=True)
     path = models.CharField(max_length=256, default=None, null=True,
                             blank=True)
     repository = models.ManyToManyField('Repository', related_name='applications',

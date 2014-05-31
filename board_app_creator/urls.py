@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^job/create/?$', login_required(views.JobCreate.as_view()), name='job-create'),
     url(r'^job/create_appjob/?$', login_required(views.ApplicationJobCreate.as_view()), name='application-job-create'),
     url(r'^job/renew/?$', login_required(views.job_update_all), name='job-renew-all'),
+    url(r'^job/update_appjob/(?P<board>[^/]+)/(?P<application>[^/]+)/?$', login_required(views.job_update_from_board_app), name='job-update-from-board-app'),
     url(r'^job/(?P<pk>\d+)/?$', views.JobDetail.as_view(), name='job-detail'),
     url(r'^job/(?P<pk>\d+)/delete/?$', login_required(views.JobDelete.as_view()), name='job-delete'),
     url(r'^job/(?P<pk>\d+)/renew/?$', login_required(views.job_update), name='job-renew'),
