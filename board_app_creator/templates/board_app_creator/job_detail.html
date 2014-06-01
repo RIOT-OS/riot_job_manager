@@ -28,10 +28,8 @@
     <dt>Board</dt>
     <dd><a href="{{ object.board.get_absolute_url }}">{{ object.board }}</a></dd>
     {% endif %}
-    <dt>Manual</dt>
-    <dd>{{ object.manual|yesno:"Yes,No" }}</dd>
-    <dt>Always update</dt>
-    <dd>{{ object.always_update|yesno:"Yes,No" }}</dd>
+    <dt>Update behavior</dt>
+    <dd>{{ object.get_update_behavior_display }}</dd>
     {% if object.upstream_job %}
     <dt>Upstream job</dt>
     <dd><a href="{{ object.upstream_job.get_absolute_url }}">{{ object.upstream_job }}</a></dd>

@@ -1,5 +1,6 @@
 {% extends 'board_app_creator/list.html' %}
 {% load bootstrap3 %}
+{% load board_app_creator %}
 {% block title %}Jobs{% endblock %}
 {% block nav-job-class %}active{% endblock %}
 {% block nav-job-link %}#{% endblock %}
@@ -18,8 +19,7 @@
     <th>Namespace</th>
     <th>Upstream job</th>
     <th>Downstream jobs</th>
-    <th><abbr title="Manually configured">M</abbr></th>
-    <th><abbr title="Always update on re-scan">U</abbr></th>
+    <th><abbr title="Update behavior">UB</abbr></th>
     <th>Board</th>
     <th>Application</th>
     <th></th>
@@ -63,20 +63,7 @@
                 , ...
             {% endif %}
         </td>
-        <td>
-            {% if object.manual %}
-                {% bootstrap_icon "check" %}
-            {% else %}
-                {% bootstrap_icon "unchecked" %}
-            {% endif %}
-        </td>
-        <td>
-            {% if object.always_update %}
-                {% bootstrap_icon "check" %}
-            {% else %}
-                {% bootstrap_icon "unchecked" %}
-            {% endif %}
-        </td>
+        <td><abbr title="{{ object.get_update_behavior_display }}">{{ object.update_behavior|update_behavior_letter }}</abbr></td>
         <td>
             {% if object.board %}
                 <a href="{{ object.board.get_absolute_url }}">{{ object.board }}</a>
@@ -92,7 +79,11 @@
             {% endif %}
         </td>
         <td><a href="{% if object.is_application_job %}{% url "application-job-update" pk=object.pk %}{% else %}{% url "job-update" pk=object.pk %}{% endif %}" title="Edit" class="text-muted">{% bootstrap_icon "pencil" %}</a></td>
-        <td><a href="{% url "job-renew" pk=object.pk %}" title="Reload job from disk" class="text-muted">{% bootstrap_icon "refresh" %}</a></td>
+        <td>
+            {% if object.update_behavior != 2 %}
+            <a href="{% url "job-renew" pk=object.pk %}" title="Reload job from disk" class="text-muted">{% bootstrap_icon "refresh" %}</a>
+            {% endif %}
+        </td>
         <td><a href="{% url "job-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
     </tr>
 {% endblock %}

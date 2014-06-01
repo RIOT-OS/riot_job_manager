@@ -384,13 +384,15 @@ class Job(models.Model):
     upstream_job = models.ForeignKey('Job', related_name='downstream_jobs',
                                      null=True, blank=True, default=None,
                                      on_delete=models.SET_NULL)
-    manual = models.BooleanField(default=False)
-    always_update = models.BooleanField(default=False)
+    update_behavior = models.IntegerField(blank=False, null=False, default=0,
+                                          choices=[(0, 'Always ask'),
+                                                   (1, 'Always update'),
+                                                   (2, 'Manual')])
 
     objects = InheritanceManager()
 
     class Meta:
-        ordering = ['name']
+        ordering = ['update_behavior', 'name']
 
     def __str__(self):
         return self.name
@@ -429,26 +431,34 @@ class Job(models.Model):
             return self._default_manager.get(pk=self.pk)
 
     def update_from_jenkins_xml(self):
-        if isinstance(self.xml, jenkins.jobs.MultiJob):
-            for jobname in self.xml:
-                if not self.downstream_jobs.filter(name=jobname).exists():
-                    self.downstream_jobs.add(*Job.objects.filter(name=jobname))
+        if not self.update_behavior == 2:
+            if isinstance(self.xml, jenkins.jobs.MultiJob):
+                for jobname in self.xml:
+                    if not self.downstream_jobs.filter(name=jobname).exists():
+                        self.downstream_jobs.add(*Job.objects.filter(name=jobname))
 
-        for multijob in Job.get_multijobs():
-            if self.name in multijob.xml:
-                self.upstream_job = multijob
+            for namespace in JobNamespace.objects.all().extra(
+                    select={'length': 'LENGTH(`name`)'}).order_by('-length'):
+                print namespace
+                if self.name.startswith(namespace.name):
+                    self.namespace = namespace
+                    break
 
-        boards = Board.objects.all()
-        apps = Application.objects.all()
+            for multijob in Job.get_multijobs():
+                if self.name in multijob.xml:
+                    self.upstream_job = multijob
 
-        if any(board.riot_name in self.name for board in boards) or \
-           any(app.name in self.name for app in apps):
-            for board in [b for b in boards if b.riot_name in self.name]:
-                for app in [a for a in apps if a.name in self.name]:
-                    self.__class__ = ApplicationJob
-                    self.board = board
-                    self.application = app
-                    self.namespace = board.repo.job_namespace
+            boards = Board.objects.all()
+            apps = Application.objects.all()
+
+            if any(board.riot_name in self.name for board in boards) or \
+               any(app.name in self.name for app in apps):
+                for board in [b for b in boards if b.riot_name in self.name]:
+                    for app in [a for a in apps if a.name in self.name]:
+                        self.__class__ = ApplicationJob
+                        self.board = board
+                        self.application = app
+                        self.namespace = board.repo.job_namespace
 
     @staticmethod
     def create_from_jenkins_xml():

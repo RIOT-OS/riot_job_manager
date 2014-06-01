@@ -4,7 +4,7 @@ from urllib import urlencode
 
 from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
-from django.forms import CheckboxSelectMultiple
+from django.forms import RadioSelect
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
@@ -142,7 +142,7 @@ def _get_next_application_job_params(prev_app_name, prev_board_name):
     while next_applications.exists() and \
         not models.ApplicationJob.objects.exclude(board__riot_name=prev_board_name,
                                                   application=next_applications.first(),
-                                                  always_update=True):
+                                                  update_behavior__gt=0):
         next_applications = models.Application.objects.filter(name__gt=next_applications.first().name)
 
     if next_applications.exists():
@@ -150,7 +150,7 @@ def _get_next_application_job_params(prev_app_name, prev_board_name):
     while next_boards.exists() and \
         not models.ApplicationJob.objects.exclude(board=next_boards.first(),
                                                   application__name=prev_app_name,
-                                                  always_update=True):
+                                                  update_behavior__gt=0):
         next_boards = models.Board.objects.filter(riot_name__gt=next_boards.first().name)
 
     if next_boards.exists():
@@ -158,6 +158,8 @@ def _get_next_application_job_params(prev_app_name, prev_board_name):
     return None, None
 
 class JobCreate(CreateView):
+    form_class = modelform_factory(models.Job, widgets={
+        'update_behavior': RadioSelect})
     model = models.Job
     success_url = reverse_lazy('job-list')
     template_name = 'board_app_creator/job_form.html'
@@ -187,7 +189,7 @@ class JobList(ListView):
         context = super(JobList, self).get_context_data(**kwargs)
         board = models.Board.objects.first()
         application = models.Application.objects.first()
-        
+
         next_application, next_board = _get_next_application_job_params(
             application.name, board.riot_name)
 
@@ -205,6 +207,8 @@ class JobList(ListView):
         return context
 
 class JobUpdate(UpdateView):
+    form_class = modelform_factory(models.Job, widgets={
+        'update_behavior': RadioSelect})
     model = models.Job
     success_url = reverse_lazy('job-list')
     template_name = 'board_app_creator/job_form.html'
@@ -215,9 +219,13 @@ class JobUpdate(UpdateView):
         return context
 
 class ApplicationJobCreate(JobCreate):
+    form_class = modelform_factory(models.ApplicationJob, widgets={
+        'update_behavior': RadioSelect})
     model = models.ApplicationJob
 
 class ApplicationJobUpdate(JobUpdate):
+    form_class = modelform_factory(models.ApplicationJob, widgets={
+        'update_behavior': RadioSelect})
     model = models.ApplicationJob
 
     def __init__(self, *args, **kwargs):
