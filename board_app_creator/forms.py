@@ -5,6 +5,8 @@ from django.conf import settings
 
 from board_app_creator import models
 
+import vcs
+
 class TreeSelectMultipleForm(forms.Form):
     trees = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple,
                                       required=False)
@@ -57,6 +59,16 @@ class BoardForm(forms.ModelForm):
                 board.riot_name if board else None]
             ).values_list('pk', 'name')
 
+class JobFromPrototypeForm(forms.ModelForm):
+    prototype = forms.ModelChoiceField(queryset=models.ApplicationJob.objects.all())
+    next_application = forms.CharField(widget=forms.HiddenInput())
+    next_board = forms.CharField(widget=forms.HiddenInput())
+
+    class Meta:
+        model = models.ApplicationJob
+        widgets = {'board': forms.HiddenInput(),
+                   'application': forms.HiddenInput()}
+
 class RepositoryForm(forms.ModelForm):
     class Meta:
         model = models.Repository
@@ -71,3 +83,44 @@ class RepositoryForm(forms.ModelForm):
                 raise ValidationError(
                     "A default repository already exists ({}).".format(qs.first()))
         return is_default
+
+    def precheckout_repo(self):
+        if not hasattr(self, '_repo'):
+            repo_url = self.cleaned_data['url']
+            repo_path = self.cleaned_data['path']
+            repo_type = self.cleaned_data['vcs']
+
+            self._repo = vcs.get_repository(repo_path, repo_type, repo_url)
+        return self._repo
+
+    def clean_boards_tree(self):
+        boards_tree = self.cleaned_data.get('boards_tree')
+        if boards_tree == '.' or not self.cleaned_data.get('has_boards_tree', True):
+            return boards_tree
+        try:
+            repo = self.precheckout_repo()
+        except KeyError:
+            return board_tree
+        try:
+            tree = repo.head.base_tree.get_file(boards_tree)
+            if isinstance(tree, vcs.Tree):
+                raise ValidationError("{} is not a tree.".format(boards_tree))
+        except ValueError, e:
+            raise ValidationError(e)
+        return boards_tree
+
+    def clean_cpu_tree(self):
+        cpu_tree = self.cleaned_data.get('cpu_tree')
+        if cpu_tree == '.' or not self.cleaned_data.get('has_cpu_tree', True):
+            return cpu_tree
+        try:
+            repo = self.precheckout_repo()
+        except KeyError:
+            return cpu_tree
+        try:
+            tree = repo.head.base_tree.get_file(cpu_tree)
+            if isinstance(tree, vcs.Tree):
+                raise ValidationError("{} is not a tree.".format(cpu_tree))
+        except ValueError, e:
+            raise ValidationError(e)
+        return cpu_tree

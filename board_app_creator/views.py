@@ -263,17 +263,28 @@ def job_update(request, pk):
     return HttpResponseRedirect(reverse_lazy('job-list'))
 
 def job_update_from_board_app(request, board, application):
-    if 'next_application' in request.REQUEST:
+    board = get_object_or_404(models.Board, riot_name=board)
+    application = get_object_or_404(models.Application, name=application)
+    try:
         next_application = request.REQUEST['next_application']
-    else:
-        next_application = application
+        models.Application.objects.get(name=next_application)
+    except (KeyError, models.Application.DoesNotExist):
+        next_application = application.name
 
-    if 'next_board' in request.REQUEST:
+    try:
         next_board = request.REQUEST['next_board']
-    else:
-        next_board = board
+        models.Board.objects.get(riot_name=next_board)
+    except (KeyError, models.Board.DoesNotExist):
+        next_board = board.riot_name
 
-    if next_application == application and next_board == board:
+    if request.method == 'GET':
+        form = forms.JobFromPrototypeForm(initial=locals())
+
+        return render(request, 'board_app_creator/job_form.html',
+                      {'form': form})
+
+    if next_application == application.name and \
+        next_board == board.riot_name:
         return HttpResponseRedirect(reverse_lazy('job-list'))
     else:
         next_next_application, next_next_board = _get_next_application_job_params(

@@ -126,7 +126,7 @@ class GitTree(Tree):
         try:
             entry = self._tree[path_name]
         except KeyError:
-            raise ValueError("{} does not exist in commit {}".format(path_name, self))
+            raise ValueError("{} does not exist in repo.".format(path_name))
         obj = self._repo.get(entry.oid)
         if obj.type == pygit2.GIT_OBJ_TREE:
             return GitTree(self._repo, obj, entry.name)
