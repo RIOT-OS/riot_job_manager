@@ -501,10 +501,10 @@ class ApplicationJob(Job):
     @property
     def xml(self):
         if not hasattr(self, '_xml') or isinstance(self._xml, jenkins.jobs.ApplicationJob):
-            self._xml = jenkins.jobs.ApplicationJob(self.path, self.board.name,
+            self._xml = jenkins.jobs.ApplicationJob(self.path, self.board.riot_name,
                                                     self.application.name,
                                                     self.application.path)
-        return super(ApplicationManager, self).xml
+        return super(ApplicationJob, self).xml
 
 
 class ApplicationJobDeletionProxy(models.Model):
