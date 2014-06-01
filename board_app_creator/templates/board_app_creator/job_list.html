@@ -82,6 +82,8 @@
         <td>
             {% if object.update_behavior != 2 %}
             <a href="{% url "job-renew" pk=object.pk %}" title="Reload job from disk" class="text-muted">{% bootstrap_icon "refresh" %}</a>
+            {% else %}
+            <span title="Reload disabled since job is configured manually" class="text-danger">{% bootstrap_icon "ban-circle" %}</span>
             {% endif %}
         </td>
         <td><a href="{% url "job-delete" pk=object.pk %}" title="Delete" class="text-danger">{% bootstrap_icon "remove" %}</a></td>
