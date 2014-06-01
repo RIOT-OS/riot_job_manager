@@ -2,6 +2,7 @@ import re
 from os.path import join as path_join
 from urllib import urlencode
 
+from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
 from django.forms import CheckboxSelectMultiple
 from django.forms.models import modelform_factory
@@ -26,10 +27,11 @@ class ApplicationDetail(DetailView):
 
 class ApplicationList(ListView):
     model = models.Application
+    paginate_by = settings.RIOT_DEFAULT_PAGINATION
 
     def get_context_data(self, **kwargs):
         context = super(ApplicationList, self).get_context_data(**kwargs)
-        context['hidden_shown'] = context['application_list'].filter(no_application=True).exists()
+        context['hidden_shown'] = any(b.no_application for b in context['application_list'])
         return context
 
 class ApplicationCreate(CreateView):
@@ -76,10 +78,11 @@ class BoardDetail(DetailView):
 
 class BoardList(ListView):
     model = models.Board
+    paginate_by = settings.RIOT_DEFAULT_PAGINATION
 
     def get_context_data(self, **kwargs):
         context = super(BoardList, self).get_context_data(**kwargs)
-        context['hidden_shown'] = context['board_list'].filter(no_board=True).exists()
+        context['hidden_shown'] = any(b.no_board for b in context['board_list'])
         return context
 
 class BoardCreate(CreateView):
@@ -178,6 +181,7 @@ class JobDetail(DetailView):
 
 class JobList(ListView):
     model = models.Job
+    paginate_by = settings.RIOT_DEFAULT_PAGINATION
 
     def get_context_data(self, **kwargs):
         context = super(JobList, self).get_context_data(**kwargs)
@@ -328,6 +332,7 @@ class RepositoryDetail(DetailView):
 
 class RepositoryList(ListView):
     model = models.Repository
+    paginate_by = settings.RIOT_DEFAULT_PAGINATION
 
 class RepositoryCreate(CreateView):
     model = models.Repository
