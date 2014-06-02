@@ -1,6 +1,7 @@
 *~
 db.sqlite3
 .*.swp
+bootstrap_venv.py
 
 
 # Byte-compiled / optimized / DLL files
