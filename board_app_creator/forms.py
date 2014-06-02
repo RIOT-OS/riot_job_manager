@@ -108,7 +108,7 @@ class RepositoryForm(forms.ModelForm):
             return board_tree
         try:
             tree = repo.head.base_tree.get_file(boards_tree)
-            if isinstance(tree, vcs.Tree):
+            if not isinstance(tree, vcs.Tree):
                 raise ValidationError("{} is not a tree.".format(boards_tree))
         except ValueError, e:
             raise ValidationError(e)
@@ -127,7 +127,7 @@ class RepositoryForm(forms.ModelForm):
             return cpu_tree
         try:
             tree = repo.head.base_tree.get_file(cpu_tree)
-            if isinstance(tree, vcs.Tree):
+            if not isinstance(tree, vcs.Tree):
                 raise ValidationError("{} is not a tree.".format(cpu_tree))
         except ValueError, e:
             raise ValidationError(e)
