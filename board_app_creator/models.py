@@ -439,7 +439,6 @@ class Job(models.Model):
 
             for namespace in JobNamespace.objects.all().extra(
                     select={'length': 'LENGTH(`name`)'}).order_by('-length'):
-                print namespace
                 if self.name.startswith(namespace.name):
                     self.namespace = namespace
                     break
