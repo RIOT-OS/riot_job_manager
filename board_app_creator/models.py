@@ -268,7 +268,7 @@ class Application(models.Model):
     A representarion of a RIOT application.
     """
     name = models.CharField(max_length=16, blank=False, null=False,
-                            db_index=True)
+                            db_index=True, unique=True)
     path = models.CharField(max_length=256, default=None, null=True,
                             blank=True)
     repository = models.ManyToManyField('Repository', related_name='applications',
