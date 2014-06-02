@@ -60,7 +60,7 @@ class BoardForm(forms.ModelForm):
             ).values_list('pk', 'name')
 
 class JobFromPrototypeForm(forms.ModelForm):
-    prototype = forms.ModelChoiceField(queryset=models.ApplicationJob.objects.all())
+    prototype_job = forms.ModelChoiceField(queryset=models.ApplicationJob.objects.all())
     next_application = forms.CharField(widget=forms.HiddenInput())
     next_board = forms.CharField(widget=forms.HiddenInput())
 
