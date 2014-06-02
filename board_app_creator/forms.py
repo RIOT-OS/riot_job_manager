@@ -97,6 +97,9 @@ class RepositoryForm(forms.ModelForm):
 
     def clean_boards_tree(self):
         boards_tree = self.cleaned_data.get('boards_tree')
+        if boards_tree == '':
+            boards_tree = '.'
+            return boards_tree
         if boards_tree == '.' or not self.cleaned_data.get('has_boards_tree', True):
             return boards_tree
         try:
@@ -113,6 +116,9 @@ class RepositoryForm(forms.ModelForm):
 
     def clean_cpu_tree(self):
         cpu_tree = self.cleaned_data.get('cpu_tree')
+        if cpu_tree == '':
+            cpu_tree = '.'
+            return cpu_tree
         if cpu_tree == '.' or not self.cleaned_data.get('has_cpu_tree', True):
             return cpu_tree
         try:
