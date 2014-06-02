@@ -31,7 +31,7 @@
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     {% if request.user.is_authenticated %}
-                    <li><a href="{% url "logout" %}">Log out {{ request.user.first_name }}</a>
+                    <li><a href="{% url "logout" %}">Log out {{ request.user.first_name }} {{ request.user.last_name|default_if_none:"" }}</a>
                     {% else %}
                     <li><a href="{% url "social:begin" backend="github-org" %}">Log in via GitHub</a>
                     {% endif %}
