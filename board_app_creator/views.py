@@ -313,7 +313,9 @@ class RepositoryAddApplicationTrees(View):
         preselect = repo.application_trees.values_list('tree_name', flat=True)
         form = self.form_class(initial={'trees': preselect}, choices=choices)
 
-        return render(request, self.template_name, {'form': form, 'repo_tree': repo.vcs_repo.head.base_tree.walk()})
+        return render(request, self.template_name, {'form': form, 
+                      'repo_tree': repo.vcs_repo.head.base_tree.walk(),
+                      'object': repo})
 
     def post(self, request, pk):
         repo = get_object_or_404(models.Repository, pk=pk)
@@ -344,7 +346,7 @@ class RepositoryAddApplicationTrees(View):
                             appobj.whitelisted_boards.add(board)
             models.Job.create_from_jenkins_xml()
             return HttpResponseRedirect(reverse_lazy('repository-list'))
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name, {'form': form, 'object': repo})
 
 class RepositoryDetail(DetailView):
     model = models.Repository

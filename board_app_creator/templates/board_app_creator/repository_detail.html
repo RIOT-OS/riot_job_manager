@@ -31,15 +31,16 @@
     {% if object.has_cpu_tree %}
     <dt>CPU tree</dt>
     <dd>{{ object.cpu_tree }}</dd>
-    {% else %}
-    <dd><a href="#">{% bootstrap_icon "plus" %}</a></dd>
     {% endif %}
-    <dt>Application trees</dt>
-    {% if object.has_application_trees %}
+    <dt>
+        Application trees
+        <a href="{% url "repository-add-application-trees" pk=object.pk %}" title="Edit application trees">
+            {% bootstrap_icon "pencil" %}
+        </a>
+    </dt>
     {% for t in object.unique_application_trees %}
     <dd>{{ t }}</dd>
+    {% empty %}
+    <dd><a href="{% url "repository-add-application-trees" pk=object.pk %}" class="text-success">{% bootstrap_icon "plus" %}</a></dd>
     {% endfor %}
-    {% else %}
-    <dd><a href="#">{% bootstrap_icon "plus" %}</a></dd>
-    {% endif %}
 {% endblock %}
