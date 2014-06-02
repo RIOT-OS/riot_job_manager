@@ -478,9 +478,9 @@ class Job(models.Model):
             obj.save()
 
             if created and obj.is_application_job():
-                if (obj.application.name in settings.RIOT_DEFAULT_APPLICATIONS):
+                if (obj.application.name in settings.RIOT_DEFAULT_APPLICATIONS) and \
+                   (obj.board.riot_name in settings.RIOT_DEFAULT_BOARDS):
                     obj.app_prototype_for.add(*Application.objects.exclude(name=obj.application.name))
-                if (obj.board.riot_name in settings.RIOT_DEFAULT_BOARDS):
                     obj.board_prototype_for.add(*Board.objects.exclude(riot_name=obj.board.riot_name))
                 obj.save()
 
