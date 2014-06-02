@@ -67,7 +67,8 @@ class JobFromPrototypeForm(forms.ModelForm):
     class Meta:
         model = models.ApplicationJob
         widgets = {'board': forms.HiddenInput(),
-                   'application': forms.HiddenInput()}
+                   'application': forms.HiddenInput(),
+                   'update_behavior': forms.RadioSelect()}
         exclude = ['upstream_job', 'namespace']
 
 class RepositoryForm(forms.ModelForm):
