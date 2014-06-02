@@ -4,7 +4,9 @@ from urllib import urlencode
 
 from django.conf import settings
 from django.core.urlresolvers import reverse_lazy
+from django.db.models import Q
 from django.forms import RadioSelect
+from django.forms.formsets import formset_factory
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render
@@ -277,11 +279,26 @@ def job_update_from_board_app(request, board, application):
     except (KeyError, models.Board.DoesNotExist):
         next_board = board.riot_name
 
-    if request.method == 'GET':
-        form = forms.JobFromPrototypeForm(initial=locals())
+    prototype_jobs = models.ApplicationJob.objects.filter(
+        Q(pk__in=board.prototype_jobs.values_list('pk', flat=True)) | 
+        Q(pk__in=application.prototype_jobs.values_list('pk', flat=True)))
 
-        return render(request, 'board_app_creator/job_form.html',
-                      {'form': form})
+    if request.method == 'GET':
+        initials = [{'board': board, 
+                     'application': application,
+                     'next_application': next_application,
+                     'next_board': next_board,
+                     'name': prototype_job.name.replace(
+                         prototype_job.board.riot_name, board.riot_name).replace(
+                         prototype_job.application.name, application.name),
+                     'prototype_job': prototype_job} 
+                     for prototype_job in prototype_jobs]
+        
+        JobFromPrototypeFormset = formset_factory(forms.JobFromPrototypeForm)
+        formset = JobFromPrototypeFormset(initial=initials)
+
+        return render(request, 'board_app_creator/job_prototype_form.html',
+                      {'formset': formset})
 
     if next_application == application.name and \
         next_board == board.riot_name:
