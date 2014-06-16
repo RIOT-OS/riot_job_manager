@@ -288,6 +288,8 @@ def job_update_from_board_app(request, board, application):
                      'application': application,
                      'next_application': next_application,
                      'next_board': next_board,
+                     'upstream_job': prototype_job.upstream_job,
+                     'namespace': prototype_job.namespace,
                      'name': prototype_job.name.replace(
                          prototype_job.board.riot_name, board.riot_name).replace(
                          prototype_job.application.name, application.name),
