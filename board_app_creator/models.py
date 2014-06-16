@@ -213,7 +213,9 @@ class USBDevice(models.Model):
     objects = USBDeviceManager()
 
     def __str__(self):
-        connected = " [not connected]" if not self.ports.exists() else ""
+        connected = " [{}]".format(
+                ', '.join([str(p) for p in self.ports.all()]) \
+                     if self.ports.exists() else " [not connected]")
         if self.tag:
             return "{} ({}){}".format(self.usb_id, self.tag, connected)
         else:
