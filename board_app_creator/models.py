@@ -136,7 +136,9 @@ class Repository(models.Model):
         Object representing the actual repository
         """
         if not hasattr(self, '_vcs'):
-            self._vcs = vcs.get_repository(self.path, self.vcs, self.url)
+            self._vcs = vcs.get_repository(
+                    path_join(settings.RIOT_REPO_BASE_PATH, self.path),
+                    self.vcs, self.url)
         return self._vcs
 
     @property

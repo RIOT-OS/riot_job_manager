@@ -1,4 +1,4 @@
-from os.path import dirname
+from os.path import dirname, join as path_join
 from django import forms
 from django.core.exceptions import ValidationError
 from django.conf import settings
@@ -92,7 +92,9 @@ class RepositoryForm(forms.ModelForm):
             repo_path = self.cleaned_data['path']
             repo_type = self.cleaned_data['vcs']
 
-            self._repo = vcs.get_repository(repo_path, repo_type, repo_url)
+            self._repo = vcs.get_repository(
+                    path_join(settings.RIOT_REPO_BASE_PATH, repo_path), 
+                    repo_type, repo_url)
         return self._repo
 
     def clean_boards_tree(self):

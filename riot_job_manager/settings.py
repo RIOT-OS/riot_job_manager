@@ -105,6 +105,6 @@ SOCIAL_AUTH_GITHUB_ORG_SCOPE = ['read:org']
 JENKINS_JOBS_PATH = '/var/lib/jenkins/jobs'
 
 RIOT_DEFAULT_PAGINATION = 20
-RIOT_REPO_BASE_PATH = os.environ['HOME']
+RIOT_REPO_BASE_PATH = os.path.join(BASE_DIR, 'repos')
 RIOT_DEFAULT_APPLICATIONS = ['default']
 RIOT_DEFAULT_BOARDS = ['msba2']
